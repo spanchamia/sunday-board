@@ -42,5 +42,8 @@ Serve over **HTTP, not `file://`**. Browsers partition storage differently for
 | `repeats` | Frequencies landing on the day, catching up, not doubling up, stopping |
 | `categories` | The Library page: shelves, aisles, the three tabs, cart/dish/repeat, your own categories |
 | `suggestions` | Cold-start staples, then what you actually buy, cook with and plan |
+| `meals` | Meal types on a dish, the rail's search and chips, the grid's row labels |
+| `users` | Two names keeping separate boards, the picker, switching, a locked board |
+| `migrate` | A board from the single-board version being adopted by its owner |
 
 Screenshots land in `tests/screenshots/`.

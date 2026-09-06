@@ -35,7 +35,7 @@ const { chromium } = require('playwright');
 
   // plan some meals in the past so "cook again" has history
   await p.evaluate(() => {
-    const raw = JSON.parse(localStorage.getItem('sundayboard.v1'));
+    const raw = JSON.parse(localStorage.getItem(Object.keys(localStorage).find(k => k.startsWith('sundayboard.board.'))));
     const s = raw.state || raw;
     const iso = n => { const d = new Date(); d.setDate(d.getDate()-n);
       return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; };
@@ -48,7 +48,7 @@ const { chromium } = require('playwright');
       { id:'m5', date:iso(12), slot:'lunch',  foodId:id('Poha') },
       { id:'m6', date:iso(40), slot:'dinner', foodId:id('Rajma') }
     ];
-    localStorage.setItem('sundayboard.v1', JSON.stringify(raw));
+    localStorage.setItem(Object.keys(localStorage).find(k => k.startsWith('sundayboard.board.')), JSON.stringify(raw));
   });
   await p.reload(); await p.waitForTimeout(1000);
   await p.click('#nav button[data-v=week]'); await p.waitForTimeout(600);
@@ -63,20 +63,21 @@ const { chromium } = require('playwright');
   console.log('placed:', (await p.$$eval('.served', s=>s.map(x=>x.textContent.replace(/\s+/g,' ').trim()))).slice(0,3));
 
   // shopping recommendations reflect what has been bought
+  await p.click('#nav button[data-v=lib]'); await p.waitForTimeout(500);
+  await p.click('#libTabs .tab[data-t=sup]'); await p.waitForTimeout(500);
+  console.log('\nsupply reco label:', await p.textContent('#libReco .recolabel'));
+  await p.click('#libReco .chiprow button'); await p.waitForTimeout(400);
+  await p.click('#libReco .chiprow button'); await p.waitForTimeout(400);
   await p.click('#nav button[data-v=shop]'); await p.waitForTimeout(400);
-  await p.click('#supBtn'); await p.waitForTimeout(400);
-  await p.click('#libTabs .tab[data-t=sup]'); await p.waitForTimeout(400);
-  console.log('\nsupply reco label:', await p.textContent('#supReco .recolabel'));
-  await p.click('#supReco .chiprow button'); await p.waitForTimeout(400);
-  await p.click('#supReco .chiprow button'); await p.waitForTimeout(400);
   console.log('cart:', await p.$$eval('#cartList .gitem .gname', n=>n.map(x=>x.textContent)));
   await p.reload(); await p.waitForTimeout(1000);
-  await p.click('#nav button[data-v=shop]'); await p.waitForTimeout(300);
-  await p.click('#supBtn'); await p.waitForTimeout(400);
+  await p.click('#nav button[data-v=shop]'); await p.waitForTimeout(400);
   await p.click('#cartList .gitem .gbtn'); await p.waitForTimeout(300);
   await p.click('#cartList .gitem .gbtn'); await p.waitForTimeout(400);
-  console.log('after buying and clearing them — reco label:', await p.textContent('#supReco .recolabel'));
-  console.log('reco now:', (await p.$$eval('#supReco .chiprow button', b=>b.slice(0,4).map(x=>x.textContent))).join(' · '));
+  await p.click('#nav button[data-v=lib]'); await p.waitForTimeout(400);
+  await p.click('#libTabs .tab[data-t=sup]'); await p.waitForTimeout(500);
+  console.log('after buying and clearing them — reco label:', await p.textContent('#libReco .recolabel'));
+  console.log('reco now:', (await p.$$eval('#libReco .chiprow button', b=>b.slice(0,4).map(x=>x.textContent))).join(' · '));
 
   await p.screenshot({ path:'screenshots/rec1.png' });
   console.log('\nERRORS:', errs.length ? errs : 'none');

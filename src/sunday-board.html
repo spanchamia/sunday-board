@@ -363,6 +363,36 @@ textarea{resize:vertical}
 .tabrow .tab.on{color:var(--time);background:color-mix(in srgb,var(--time) 12%,transparent);
   border-color:color-mix(in srgb,var(--time) 30%,transparent)}
 .chiprow{display:flex;flex-wrap:wrap;gap:5px;margin-top:9px}
+button.sl{border:0;background:none;font:inherit;text-align:left;cursor:pointer;
+  border-radius:7px;transition:background .12s,color .12s}
+button.sl:hover{background:var(--sunk)}
+button.sl.picked{background:color-mix(in srgb,var(--time) 12%,transparent);color:var(--time)}
+button.sl.picked b,button.sl.picked em{color:inherit}
+.whoList{display:flex;flex-direction:column;gap:6px}
+.whoList button{display:flex;align-items:center;gap:10px;width:100%;text-align:left;
+  border:1px solid var(--rule);background:var(--card);border-radius:10px;padding:11px 13px;
+  font:inherit;cursor:pointer}
+.whoList button:hover{border-color:var(--time);background:color-mix(in srgb,var(--time) 6%,transparent)}
+.whoList .av{flex:0 0 auto;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;
+  font-size:13px;font-weight:700;color:var(--paper);background:var(--time)}
+.whoList .nm{flex:1;min-width:0}
+.whoList .nm b{display:block;font-size:14px;font-weight:650}
+.whoList .nm span{display:block;font-size:11.5px;color:var(--ink-3);overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap}
+.whoList .lk{font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-3)}
+.slotpick{display:flex;flex-wrap:wrap;gap:6px}
+.slotpick label{display:flex;align-items:center;gap:6px;border:1px solid var(--rule);border-radius:99px;
+  padding:5px 11px;font-size:12.5px;font-weight:600;color:var(--ink-2);cursor:pointer;user-select:none}
+.slotpick label:hover{border-color:var(--time);color:var(--time)}
+.slotpick input{width:14px;height:14px;margin:0;accent-color:var(--time)}
+.slotpick label:has(input:checked){border-color:var(--time);color:var(--time);
+  background:color-mix(in srgb,var(--time) 12%,transparent)}
+#pantrySearch{width:100%;font-size:13px;padding:7px 9px;margin-top:2px}
+.dish .slots{display:block;font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;
+  color:var(--ink-3);margin-top:2px}
+#foodRows .row .slots{display:inline-flex;gap:4px;margin-top:3px}
+#foodRows .row .slots span{font-size:9.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;
+  color:var(--fcol);border:1px solid var(--fbr);border-radius:99px;padding:1px 7px}
 .chiprow button{border:1px solid var(--rule);background:var(--card);font:inherit;font-size:11.5px;
   font-weight:600;color:var(--ink-2);padding:4px 9px;border-radius:99px;cursor:pointer;white-space:nowrap}
 .chiprow button:hover{border-color:var(--time);color:var(--time)}
@@ -520,7 +550,16 @@ textarea{resize:vertical}
 .who{display:flex;flex-direction:column;gap:1px;padding:0 2px}
 .who b{font-size:12.5px;font-weight:650;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .who span{font-size:11px;color:var(--ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-@media (max-width:880px){.who{display:none}}
+.who{border:0;background:none;font:inherit;text-align:left;padding:0;width:100%}
+.who.switchable{cursor:pointer;border-radius:8px;padding:4px 6px;margin:-4px -6px}
+.who.switchable:hover{background:var(--sunk)}
+@media (max-width:880px){
+  /* the name is how you change boards, so it has to survive the narrow rail */
+  .who{width:auto;display:flex;align-items:center;gap:0}
+  .who span{display:none}
+  .who b{font-size:12.5px;max-width:88px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .who.switchable{padding:5px 8px;margin:0;border:1px solid var(--rule);border-radius:99px}
+}
 
 /* ── notifications ──────────────────────────────────────────────────── */
 .bell{position:relative;display:flex;align-items:center;gap:8px;width:100%;border:1px solid var(--rule);
@@ -588,6 +627,15 @@ textarea{resize:vertical}
     <h2 id="gateTitle">Set up your board</h2>
     <p class="blurb" id="gateBlurb">Your calendar, tasks and meal plan — all in one place.</p>
 
+    <div id="gatePick" hidden>
+      <div class="whoList" id="whoList"></div>
+      <button class="btn wide" type="button" id="gateOther" style="margin-top:10px">Someone else</button>
+    </div>
+
+    <div id="gateBack2" hidden style="margin-top:10px">
+      <button class="linkbtn" type="button" id="gateToList">&lsaquo; Back to the list</button>
+    </div>
+
     <div id="gateNew">
       <label class="f"><span>Your name</span><input id="gName" placeholder="Shiv" autocomplete="name"></label>
       <label class="f"><span>Email address</span>
@@ -606,6 +654,7 @@ textarea{resize:vertical}
     </div>
 
     <div id="gateBack" hidden>
+      <p class="blurb" id="gateWho" style="margin:-6px 0 12px"></p>
       <label class="f"><span>Passcode</span>
         <input id="gUnlock" type="password" autocomplete="current-password" placeholder="Your passcode"></label>
     </div>
@@ -631,7 +680,8 @@ textarea{resize:vertical}
       <button data-v="tasks"><i class="tick"></i>Tasks</button>
     </nav>
     <div class="rail-foot">
-      <div class="who" id="whoBox"><b id="whoName"></b><span id="whoMail"></span></div>
+      <button class="who" id="whoBox" type="button" title="Switch to another board">
+        <b id="whoName"></b><span id="whoMail"></span></button>
       <button class="bell" id="bellBtn">
         <svg class="ico" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor"
              stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -642,7 +692,7 @@ textarea{resize:vertical}
       </button>
       <div class="footline">
         <span class="syncline"><i class="syncdot" id="syncDot"></i><span id="syncText">Loading…</span></span>
-        <button class="linkbtn" id="lockBtn">Sign out</button>
+        <button class="linkbtn" id="lockBtn">Add a passcode</button>
       </div>
     </div>
   </aside>
@@ -715,6 +765,14 @@ textarea{resize:vertical}
             <button class="linkbtn" type="button" id="fCancel">Close</button></div>
           <label class="f"><span>Name</span><input id="fName" placeholder="Chicken tacos" required></label>
           <label class="f"><span>Notes</span><textarea id="fNotes" rows="2" placeholder="About 20 minutes"></textarea></label>
+          <label class="f" style="margin-bottom:6px"><span>Good for</span></label>
+          <div class="slotpick" id="fSlots">
+            <label><input type="checkbox" value="breakfast"><span>Breakfast</span></label>
+            <label><input type="checkbox" value="lunch"><span>Lunch</span></label>
+            <label><input type="checkbox" value="dinner"><span>Dinner</span></label>
+            <label><input type="checkbox" value="snack"><span>Snack</span></label>
+          </div>
+          <p class="hint" style="margin:6px 0 15px">Leave them all off and it fits any meal.</p>
           <label class="f" style="margin-bottom:7px"><span>Ingredients</span></label>
           <div id="ingBox"></div>
           <p class="hint">Drag ingredients in from the library, or add your own.</p>
@@ -758,7 +816,9 @@ textarea{resize:vertical}
       </div>
       <div class="board">
         <aside class="card pantry">
-          <h3>Foods</h3>
+          <div class="cardhead"><h3>Foods</h3><span class="eyebrow" id="pantryTally"></span></div>
+          <input id="pantrySearch" placeholder="Search your foods" autocomplete="off">
+          <div class="chiprow" id="slotChips"></div>
           <div class="reco" id="dishReco" hidden></div>
           <div class="pantrylist" id="pantryList"></div>
         </aside>
@@ -922,7 +982,57 @@ function toast(msg){
 }
 
 /* ── state + persistence ────────────────────────────────────────────── */
-const KEY = 'sundayboard.v1';
+/* ── one board per person ───────────────────────────────────────────────
+   Boards are keyed by a slug of the name, so "Shiv", " shiv " and "SHIV"
+   are the same person and come back to the same board every time. Signing
+   in under a new name makes a new board beside the others; it never writes
+   over anyone else's.                                                     */
+const LEGACY_KEY = 'sundayboard.v1';
+const USERS_KEY  = 'sundayboard.users';
+const boardKey = slug => `sundayboard.board.${slug}`;
+const slugify = name => String(name || '').trim().toLowerCase().replace(/\s+/g, ' ');
+
+let who = null;              // the slug of whoever is signed in
+
+function readUsers(){
+  try {
+    const raw = JSON.parse(localStorage.getItem(USERS_KEY) || '[]');
+    return Array.isArray(raw) ? raw.filter(u => u && u.slug) : [];
+  } catch { return []; }
+}
+
+function writeUsers(list){
+  try { localStorage.setItem(USERS_KEY, JSON.stringify(list)); } catch {}
+}
+
+function rememberUser(slug, name, email, enc){
+  const list = readUsers().filter(u => u.slug !== slug);
+  list.push({ slug, name, email: email || '', enc: !!enc, seenAt: Date.now() });
+  list.sort((a, b) => (b.seenAt || 0) - (a.seenAt || 0));
+  writeUsers(list);
+}
+
+function readBoard(slug){
+  try { const raw = localStorage.getItem(boardKey(slug)); return raw ? JSON.parse(raw) : null; }
+  catch { return null; }
+}
+
+/* A board saved before boards had owners. Hand it to whoever its profile
+   names — or, if it is locked, to the name the envelope carries. */
+function adoptLegacy(){
+  let raw;
+  try { raw = localStorage.getItem(LEGACY_KEY); } catch { return; }
+  if (!raw) return;
+  let env; try { env = JSON.parse(raw); } catch { return; }
+  const name = env.enc ? (env.who || '') : ((env.profile && env.profile.name) || '');
+  const slug = slugify(name);
+  if (!slug) return;                       // nothing to key it by; leave it alone
+  if (!readBoard(slug)){
+    try { localStorage.setItem(boardKey(slug), raw); } catch { return; }
+    rememberUser(slug, name, (env.profile && env.profile.email) || '', !!env.enc);
+  }
+  try { localStorage.removeItem(LEGACY_KEY); } catch {}
+}
 let state = { v:1, updatedAt:0, profile:{name:'',email:''}, targets:{}, cart:[], repeats:[], myItems:[], myCats:[], bought:{}, events:[], tasks:[], foods:[], meals:[], alerts:[], fired:{}, desktop:false };
 let ns = null, nsAsked = false, saveT = null;
 
@@ -932,7 +1042,8 @@ function normalise(raw){
     v:1, updatedAt: Number(s.updatedAt) || 0,
     events: Array.isArray(s.events) ? s.events : [],
     tasks:  Array.isArray(s.tasks)  ? s.tasks  : [],
-    foods:  Array.isArray(s.foods)  ? s.foods  : [],
+    foods: (Array.isArray(s.foods) ? s.foods : [])
+      .map(f => ({ ...f, slots: Array.isArray(f.slots) ? f.slots : [] })),
     meals:  Array.isArray(s.meals)  ? s.meals  : [],
     profile: (s.profile && typeof s.profile === 'object') ? s.profile : { name:'', email:'' },
     targets: (s.targets && typeof s.targets === 'object') ? s.targets : {},
@@ -1001,17 +1112,38 @@ async function unwrap(env, pass){
 let chain = Promise.resolve();
 function saveLocal(){
   chain = chain.then(async () => {
-    try { localStorage.setItem(KEY, await envelope()); } catch {}
+    if (!who) return;
+    try { localStorage.setItem(boardKey(who), await envelope()); } catch {}
+    rememberUser(who, state.profile.name || '', state.profile.email || '', !!lockKey);
   }).catch(() => {});
   return chain;
 }
 
-function readLocal(){
-  try { const raw = localStorage.getItem(KEY); return raw ? JSON.parse(raw) : null; } catch { return null; }
-}
-async function readCloud(){
-  try { const r = await fetch('data/store.json', { cache:'no-store' }); if (r.ok) return await r.json(); } catch {}
+const cloudFile = slug => `data/board-${encodeURIComponent(slug)}.json`;
+
+async function readCloud(slug){
+  for (const path of [cloudFile(slug), 'data/store.json']){
+    try {
+      const r = await fetch(path, { cache:'no-store' });
+      if (!r.ok) continue;
+      const env = await r.json();
+      // the old shared file only counts if it is this person's board
+      if (path === 'data/store.json'){
+        const name = env.enc ? (env.who || '') : ((env.profile && env.profile.name) || '');
+        if (slugify(name) !== slug) continue;
+      }
+      return env;
+    } catch {}
+  }
   return null;
+}
+
+async function readCloudUsers(){
+  try {
+    const r = await fetch('data/users.json', { cache:'no-store' });
+    if (r.ok){ const list = await r.json(); if (Array.isArray(list)) return list.filter(u => u && u.slug); }
+  } catch {}
+  return [];
 }
 const newest = (a, b) => {
   if (!a) return b; if (!b) return a;
@@ -1031,7 +1163,10 @@ async function pushUp(){
   const body = await envelope();
   if (!api || !api.publish){ setSync('ok', lockKey ? 'Saved, locked' : 'Saved on this device'); return; }
   try {
-    await api.publish({ 'data/store.json': body });
+    await api.publish({
+      [cloudFile(who)]: body,
+      'data/users.json': JSON.stringify(readUsers())
+    });
     setSync('ok', lockKey ? 'Saved to your account, locked' : 'Saved to your account');
   } catch (err) {
     if (err && err.code === 'conflict') setSync('busy', 'Reloading newer copy…');
@@ -2112,11 +2247,25 @@ dropZone.addEventListener('drop', e => {
   if (d && d.t === 'ing') addFromLibrary(d.ix);
 });
 
+/* which meals a dish suits — an empty list means "any of them" */
+function readSlots(){
+  return [...$('#fSlots').querySelectorAll('input:checked')].map(i => i.value);
+}
+function writeSlots(list){
+  const want = new Set(list || []);
+  $('#fSlots').querySelectorAll('input').forEach(i => { i.checked = want.has(i.value); });
+}
+const suitsSlot = (food, slot) => {
+  const list = food.slots || [];
+  return !list.length || list.includes(slot);
+};
+
 function resetFoodForm(){
   editingFood = null;
   $('#foodFormHead').textContent = 'Create a food';
   $('#fSave').textContent = 'Save food';
   $('#fName').value = ''; $('#fNotes').value = '';
+  writeSlots([]);
   $('#ingBox').innerHTML = '';
   $('#ingSearch').value = '';
   drawPicker();
@@ -2137,7 +2286,8 @@ $('#fCancel').onclick = closeCompose;
 $('#foodForm').addEventListener('submit', e => {
   e.preventDefault();
   const name = $('#fName').value.trim(); if (!name) return toast('Give the food a name');
-  const payload = { name, notes:$('#fNotes').value.trim(), ingredients:readIngs() };
+  const payload = { name, notes:$('#fNotes').value.trim(), ingredients:readIngs(),
+                    slots:readSlots() };
   if (editingFood){
     const f = state.foods.find(x => x.id === editingFood);
     if (f) Object.assign(f, payload);
@@ -2184,6 +2334,8 @@ function drawFoods(){
       <div class="fill">
         <div class="name">${esc(f.name)}</div>
         ${f.notes ? `<div class="note">${esc(f.notes)}</div>` : ''}
+        ${(f.slots || []).length ? `<div class="slots">${(f.slots || [])
+          .map(k => `<span>${esc(slotOf(k).label)}</span>`).join('')}</div>` : ''}
         <div class="chips">${(f.ingredients||[]).length
           ? f.ingredients.map(i => `<span>${esc(i.name)} · ${esc(round2(i.qty))}${i.unit ? ' '+esc(i.unit) : ''}</span>`).join('')
           : '<span>No ingredients yet</span>'}</div>
@@ -2210,6 +2362,7 @@ function drawFoods(){
       $('#foodFormHead').textContent = 'Edit food';
       $('#fSave').textContent = 'Update food';
           $('#fName').value = f.name; $('#fNotes').value = f.notes || '';
+      writeSlots(f.slots);
       const b = $('#ingBox'); b.innerHTML = '';
       (f.ingredients || []).forEach(i => b.appendChild(ingLine(i)));
       setTimeout(refreshFoodNut, 10);
@@ -2233,6 +2386,12 @@ function drawFoods(){
 /* ── meal plan ──────────────────────────────────────────────────────── */
 let weekStart = sunday(today());
 let held = null;
+let pantryT;
+$('#pantrySearch').addEventListener('input', e => {
+  PANTRY.q = e.target.value;
+  clearTimeout(pantryT); pantryT = setTimeout(drawPantry, 110);
+});
+
 $('#wPrev').onclick = () => { weekStart = shift(weekStart,-7); drawWeek(); };
 $('#wNext').onclick = () => { weekStart = shift(weekStart, 7); drawWeek(); };
 $('#wNow').onclick  = () => { weekStart = sunday(today()); drawWeek(); };
@@ -2297,18 +2456,54 @@ function drawDishReco(){
   });
 }
 
+const PANTRY = { q:'', slot:'' };
+
+function drawSlotChips(){
+  const box = $('#slotChips');
+  if (!box) return;
+  const count = k => state.foods.filter(f => suitsSlot(f, k)).length;
+  const chip = (k, label, n) =>
+    `<button type="button" class="${k === PANTRY.slot ? 'on' : ''}" data-s="${k}">${esc(label)}<i>${n}</i></button>`;
+  box.innerHTML = chip('', 'All', state.foods.length) +
+    SLOTS.map(sl => chip(sl.key, sl.label, count(sl.key))).join('');
+  box.querySelectorAll('button').forEach(b => {
+    b.onclick = () => { PANTRY.slot = b.dataset.s; drawPantry(); };
+  });
+}
+
+function pantryHits(){
+  const terms = PANTRY.q.toLowerCase().split(/\s+/).filter(Boolean);
+  return state.foods
+    .filter(f => !PANTRY.slot || suitsSlot(f, PANTRY.slot))
+    .filter(f => terms.every(t =>
+      (f.name + ' ' + (f.notes || '') + ' ' +
+       (f.ingredients || []).map(i => i.name).join(' ')).toLowerCase().includes(t)))
+    .sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity:'base' }));
+}
+
 function drawPantry(){
-  const list = [...state.foods].sort((a,b) => a.name.localeCompare(b.name, undefined, {sensitivity:'base'}));
+  drawSlotChips();
   const box = $('#pantryList');
-  if (!list.length){
+  if (!state.foods.length){
+    $('#pantryTally').textContent = '';
     box.innerHTML = '<div class="empty">No foods yet.<br><button class="btn sm solid" id="goFoods" style="margin-top:9px">Add your first food</button></div>';
     const b = $('#goFoods'); if (b) b.onclick = () => go('pantry');
     return;
   }
+  const list = pantryHits();
+  $('#pantryTally').textContent = list.length === state.foods.length
+    ? `${list.length}` : `${list.length} of ${state.foods.length}`;
+  if (!list.length){
+    box.innerHTML = `<div class="empty">Nothing here${PANTRY.slot
+      ? ` for ${esc(slotOf(PANTRY.slot).label.toLowerCase())}` : ''}${PANTRY.q ? ' matching that' : ''}.</div>`;
+    return;
+  }
   box.innerHTML = list.map(f => {
     const n = (f.ingredients || []).length;
+    const sl = (f.slots || []);
     return `<div class="dish hued" draggable="true" data-id="${f.id}" style="--fh:${hueOf(f.name)}">
-      <b>${esc(f.name)}</b><em>${n} ingredient${n === 1 ? '' : 's'}</em></div>`;
+      <b>${esc(f.name)}</b><em>${n} ingredient${n === 1 ? '' : 's'}</em>
+      ${sl.length ? `<span class="slots">${sl.map(k => esc(slotOf(k).label)).join(' · ')}</span>` : ''}</div>`;
   }).join('');
 
   box.querySelectorAll('.dish').forEach(el => {
@@ -2335,9 +2530,16 @@ function drawBoard(){
     `<div class="wd${d===now?' now':''}"><b>${dayName(d)}</b><em>${dayShort(d)}</em></div>`).join('');
 
   for (const slot of SLOTS){
-    const label = document.createElement('div');
-    label.className = 'sl';
+    // the row label doubles as a filter — tap Breakfast, see breakfast foods
+    const label = document.createElement('button');
+    label.type = 'button';
+    label.className = 'sl' + (PANTRY.slot === slot.key ? ' picked' : '');
+    label.title = `Show the foods you set for ${slot.label.toLowerCase()}`;
     label.innerHTML = `<b>${slot.label}</b><em>${slot.time}</em>`;
+    label.onclick = () => {
+      PANTRY.slot = PANTRY.slot === slot.key ? '' : slot.key;
+      drawPantry(); drawBoard();
+    };
     grid.appendChild(label);
 
     for (const date of days){
@@ -3476,6 +3678,7 @@ function enterBoard(){
   $('#shell').hidden = false;
   $('#whoName').textContent = state.profile.name || 'Your board';
   $('#whoMail').textContent = state.profile.email || '';
+  $('#whoBox').classList.toggle('switchable', readUsers().length > 1);
   $('#lockBtn').textContent = lockKey ? 'Lock board' : 'Add a passcode';
   $('#lockBtn').hidden = !lockKey && !canLock();
   setSync(state.updatedAt ? 'ok' : '', state.updatedAt ? (lockKey ? 'Saved, locked' : 'Saved') : 'Nothing saved yet');
@@ -3494,7 +3697,8 @@ function enterBoard(){
 
 /* ── sign in ────────────────────────────────────────────────────────── */
 let pending = null;          // the encrypted envelope waiting on a passcode
-let mode = 'new';            // 'new' | 'unlock'
+let pendingSlug = null;      // whose board that envelope is
+let mode = 'new';            // 'pick' | 'new' | 'unlock'
 
 function gateError(msg){
   const box = $('#gateErr');
@@ -3502,12 +3706,68 @@ function gateError(msg){
   box.textContent = msg; box.hidden = false;
 }
 
+/* ── who is this? ───────────────────────────────────────────────────────
+   Every board that has been opened in this browser is listed. Picking a
+   name reopens that board exactly as it was; typing a name that is already
+   on the list opens it too, rather than starting a second one.           */
+function showPick(list){
+  mode = 'pick';
+  $('#gatePick').hidden = false; $('#gateNew').hidden = true;
+  $('#gateBack').hidden = true; $('#gateReset').hidden = true;
+  $('#gateTitle').textContent = 'Whose board?';
+  $('#gateBlurb').textContent = 'Pick up where you left off.';
+  $('#gateGo').hidden = true;
+  $('#gateFine').innerHTML = 'Each name keeps its own board. Nothing you have saved is written over ' +
+    'when someone else signs in.';
+  gateError('');
+  const box = $('#whoList');
+  box.innerHTML = list.map(u => `
+    <button type="button" data-slug="${esc(u.slug)}">
+      <span class="av">${esc((u.name || '?').trim().charAt(0).toUpperCase())}</span>
+      <span class="nm"><b>${esc(u.name || u.slug)}</b>${u.email ? `<span>${esc(u.email)}</span>` : ''}</span>
+      ${u.enc ? '<span class="lk">locked</span>' : ''}
+    </button>`).join('');
+  box.querySelectorAll('button').forEach(b => {
+    b.onclick = () => openBoardFor(b.dataset.slug);
+  });
+}
+
+/* Open a board that already exists on this device (or in the cloud copy). */
+async function openBoardFor(slug){
+  const known = readUsers().find(u => u.slug === slug);
+  const env = newest(readBoard(slug), await readCloud(slug));
+  if (!env){
+    who = slug;
+    state = normalise({});
+    state.profile = { name: known ? known.name : slug, email: known ? known.email : '', createdAt: Date.now() };
+    touch(); enterBoard(); return;
+  }
+  if (env.enc){
+    if (!canLock()){
+      showNew();
+      gateError('This browser cannot unlock that board. Try the browser you set it up in.');
+      return;
+    }
+    showUnlock(env, slug);
+    return;
+  }
+  who = slug;
+  state = normalise(env);
+  enterBoard();
+}
+
 function showNew(){
   mode = 'new';
+  $('#gatePick').hidden = true;
+  $('#gateGo').hidden = false;
   $('#gateNew').hidden = false; $('#gateBack').hidden = true; $('#gateReset').hidden = true;
-  $('#gateTitle').textContent = 'Set up your board';
-  $('#gateBlurb').textContent = 'Your calendar, tasks and meal plan — all in one place.';
+  const others = readUsers().length;
+  $('#gateTitle').textContent = others ? 'Open a board' : 'Set up your board';
+  $('#gateBlurb').textContent = others
+    ? 'A name you have used before opens that board again.'
+    : 'Your calendar, tasks and meal plan — all in one place.';
   $('#gateGo').textContent = 'Open my board';
+  $('#gateBack2').hidden = !others;
   $('#gateFine').innerHTML = '<b>This page is already private to your Claude account</b> — nobody else can ' +
     'open the link unless you share it. A passcode adds a second lock on the saved data itself.';
   $('#lockBox').hidden = !canLock();
@@ -3515,9 +3775,11 @@ function showNew(){
   setTimeout(() => $('#gName').focus(), 40);
 }
 
-function showUnlock(env){
-  mode = 'unlock'; pending = env;
+function showUnlock(env, slug){
+  mode = 'unlock'; pending = env; pendingSlug = slug;
+  $('#gatePick').hidden = true; $('#gateGo').hidden = false;
   $('#gateNew').hidden = true; $('#gateBack').hidden = false;
+  $('#gateWho').textContent = '';
   $('#gateTitle').textContent = env.who ? `Welcome back, ${env.who}` : 'Welcome back';
   $('#gateBlurb').textContent = 'Your board is locked. Enter your passcode to open it.';
   $('#gateGo').textContent = 'Unlock';
@@ -3528,10 +3790,12 @@ function showUnlock(env){
   $('#wipeLink').onclick = e => {
     e.preventDefault();
     if (!confirm('Clear this board and start over? Everything saved on it is lost for good.')) return;
-    try { localStorage.removeItem(KEY); } catch {}
+    try { localStorage.removeItem(boardKey(pendingSlug)); } catch {}
+    writeUsers(readUsers().filter(u => u.slug !== pendingSlug));
     lockKey = null; lockSalt = null; pending = null;
     state = normalise({});
-    showNew();
+    const rest = readUsers();
+    rest.length ? showPick(rest) : showNew();
   };
   gateError('');
   setTimeout(() => $('#gUnlock').focus(), 40);
@@ -3547,6 +3811,7 @@ $('#gateForm').addEventListener('submit', async e => {
       if (!pass) return gateError('Enter your passcode.');
       try { state = await unwrap(pending, pass); }
       catch { $('#gUnlock').value = ''; return gateError('That passcode does not match. Try again.'); }
+      who = pendingSlug;
       enterBoard();
       return;
     }
@@ -3556,6 +3821,16 @@ $('#gateForm').addEventListener('submit', async e => {
     if (!name) return gateError('What should the board call you?');
     if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return gateError('That email address does not look right.');
 
+    // a name that already has a board opens it — it never starts a second one
+    const slug = slugify(name);
+    const existing = readUsers().find(u => u.slug === slug) || readBoard(slug);
+    if (existing){
+      if ($('#gPass').value || $('#gPass2').value)
+        return gateError('That board already exists. Open it, then add a passcode from inside.');
+      await openBoardFor(slug);
+      return;
+    }
+
     const pass = $('#gPass').value, pass2 = $('#gPass2').value;
     if (pass || pass2){
       if (pass.length < 4) return gateError('A passcode needs at least 4 characters.');
@@ -3563,11 +3838,39 @@ $('#gateForm').addEventListener('submit', async e => {
       lockSalt = crypto.getRandomValues(new Uint8Array(16));
       lockKey = await deriveKey(pass, lockSalt);
     }
-    state.profile = { name, email, createdAt: state.profile.createdAt || Date.now() };
+    who = slug;
+    state = normalise({});
+    state.profile = { name, email, createdAt: Date.now() };
     touch();
     enterBoard();
   } finally { go.disabled = false; }
 });
+
+$('#gateOther').onclick = () => { showNew(); };
+
+/* switching boards saves this one first, then goes back to the list */
+$('#whoBox').onclick = async () => {
+  const others = readUsers().filter(u => u.slug !== who);
+  sheet('Switch board', `
+    <p style="font-size:13.5px;color:var(--ink-2)">
+      You are on <b>${esc(state.profile.name || 'this board')}</b>. It is saved, and stays exactly
+      as it is${others.length ? ` — as does everyone else's.` : '.'}</p>
+    ${others.length ? `<p style="font-size:13px;color:var(--ink-3);margin-top:8px">Also on this browser:
+      ${others.map(u => esc(u.name || u.slug)).join(', ')}.</p>` : ''}`,
+    [
+      { gap:true },
+      { label:'Stay here', go:shut },
+      { label:'Switch', solid:true, go: async () => {
+        await saveLocal();
+        shut();
+        lockKey = null; lockSalt = null; who = null;
+        $('#shell').hidden = true; $('#gate').hidden = false;
+        const list = readUsers();
+        list.length ? showPick(list) : showNew();
+      }}
+    ]);
+};
+$('#gateToList').onclick = () => { const l = readUsers(); l.length ? showPick(l) : showNew(); };
 
 $('#lockBtn').onclick = async () => {
   if (lockKey){
@@ -3605,16 +3908,18 @@ $('#lockBtn').onclick = async () => {
 
 /* ── boot ───────────────────────────────────────────────────────────── */
 (async () => {
-  const env = newest(readLocal(), await readCloud());
-  if (!env){ showNew(); return; }
-  if (env.enc){
-    if (!canLock()){ showNew(); gateError('This browser cannot unlock the board. Try the browser you set it up in.'); return; }
-    showUnlock(env);
-    return;
+  adoptLegacy();
+
+  // a board this browser has never seen may still be in the cloud copy
+  for (const u of await readCloudUsers()){
+    if (!readUsers().some(x => x.slug === u.slug))
+      rememberUser(u.slug, u.name || u.slug, u.email || '', !!u.enc);
   }
-  state = normalise(env);
-  if (!state.profile || !state.profile.name){ showNew(); return; }
-  enterBoard();
+
+  const list = readUsers();
+  if (!list.length){ showNew(); return; }
+  if (list.length === 1){ await openBoardFor(list[0].slug); return; }
+  showPick(list);
 })();
 
 })();

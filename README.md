@@ -15,14 +15,20 @@ up alongside them. Click a day to see what's on it.
 
 **Tasks** — due date, time, notes, done. Anything with a due date lands on the calendar.
 
-**Foods** — build a dish once from the ingredient library, and its nutrition and
+**Foods** — build a dish once from the ingredient library, and say which meals it
+suits: breakfast, lunch, dinner, snack, any combination. Leave them all off and it
+fits anything. Its nutrition and
 grocery contribution follow it everywhere.
 
 **Meal plan** — a week grid with breakfast, lunch, dinner and snack. Drag a food onto
 a slot, or tap on a phone. Each day shows its calories and protein; click through for
-the full read-out.
+the full read-out. The food rail has a search box — it matches a dish's name, its
+notes and its ingredients — and a row of meal chips. Tap **Breakfast**, or the
+BREAKFAST label on the grid itself, and the rail narrows to breakfast dishes.
 
 ![The meal plan](docs/mealplan.png)
+
+![Meal types and the rail search](docs/mealtypes.png)
 
 **Shopping** — the week's ingredients with quantities added up. Drag what you're
 buying into the cart and tick things off as you go.
@@ -137,6 +143,27 @@ src/gen_supplies.py       regenerates supplies.txt
 tests/                  Playwright tests
 docs/                   screenshots
 ```
+
+## One board per person
+
+Boards are keyed by a slug of the name, so **Shiv**, `shiv` and `  SHIV  ` all open
+the same board, every time. Signing in under a name nobody has used makes a new board
+beside the others — it never writes over one that exists. If more than one board is on
+the device you get a picker on the way in; your name in the sidebar switches between
+them, and each board saves itself before it hands over.
+
+A passcode locks one board, not the device: a locked board shows as *locked* in the
+picker and asks for its passcode when you choose it. Boards written by the earlier
+single-board version are adopted by whoever their profile names the first time you
+open this one.
+
+```
+sundayboard.users            the list of boards on this device
+sundayboard.board.shiv       one board
+sundayboard.board.priya      another, untouched by the first
+```
+
+![Whose board?](docs/boards.png)
 
 ## Categories
 

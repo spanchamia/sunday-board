@@ -29,7 +29,7 @@ const { chromium } = require('playwright');
   console.log('feed kept:', await p.$$eval('.feed .item .head', e => e.map(x => x.textContent)));
   await p.click('#sheetX');
   // and the cleanup is saved, not just cosmetic
-  const kept = await p.evaluate(() => JSON.parse(localStorage.getItem('sundayboard.v1')).alerts.map(a => a.title));
+  const kept = await p.evaluate(() => JSON.parse(localStorage.getItem(Object.keys(localStorage).find(k => k.startsWith('sundayboard.board.')))).alerts.map(a => a.title));
   console.log('persisted:', kept);
   await b.close();
 })();

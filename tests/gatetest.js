@@ -42,7 +42,7 @@ const URL = BASE;
   await page.fill('#tTitle','Finish history essay');
   await page.click('#taskForm button[type=submit]');
   await page.waitForTimeout(800);
-  const raw = await page.evaluate(() => localStorage.getItem('sundayboard.v1'));
+  const raw = await page.evaluate(() => localStorage.getItem(Object.keys(localStorage).find(k => k.startsWith('sundayboard.board.'))));
   console.log('4. stored bytes:', raw.length,
               '| looks encrypted:', /"enc":1/.test(raw),
               '| leaks the task text:', /history essay/.test(raw),
@@ -71,7 +71,7 @@ const URL = BASE;
   await p2.fill('#gName','Shiv'); await p2.fill('#gEmail','shiv@example.com');
   await p2.click('#gateGo'); await p2.waitForTimeout(800);
   console.log('7. no-passcode sign-in:', await p2.isVisible('#shell'), '| button:', await p2.textContent('#lockBtn'));
-  const raw2 = await p2.evaluate(() => localStorage.getItem('sundayboard.v1'));
+  const raw2 = await p2.evaluate(() => localStorage.getItem(Object.keys(localStorage).find(k => k.startsWith('sundayboard.board.'))));
   console.log('   stored plain (expected):', !/"enc":1/.test(raw2));
   await p2.reload(); await p2.waitForTimeout(800);
   console.log('   reload goes straight in:', await p2.isVisible('#shell'), '| gate hidden:', !(await p2.isVisible('#gate')));
@@ -80,7 +80,7 @@ const URL = BASE;
   await p2.click('#lockBtn'); await p2.waitForTimeout(400);
   await p2.fill('#np1','1234'); await p2.fill('#np2','1234');
   await p2.click('#sheetFoot .btn.solid'); await p2.waitForTimeout(1000);
-  const raw3 = await p2.evaluate(() => localStorage.getItem('sundayboard.v1'));
+  const raw3 = await p2.evaluate(() => localStorage.getItem(Object.keys(localStorage).find(k => k.startsWith('sundayboard.board.'))));
   console.log('   passcode added later -> encrypted:', /"enc":1/.test(raw3), '| button:', await p2.textContent('#lockBtn'));
 
   // mobile + dark look

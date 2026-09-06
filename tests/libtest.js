@@ -34,9 +34,9 @@ const URL = BASE;
   await page.screenshot({ path:'screenshots/y2-japanese.png' });
 
   // category filter
-  await page.selectOption('#fCuisine',''); await page.selectOption('#fGroup','Fish & seafood');
+  await page.selectOption('#fCuisine',''); await page.selectOption('#fGroup','Fish');
   await page.waitForTimeout(350);
-  console.log('Fish category:', (await page.$$eval('#ingResults .pick b', b=>b.map(x=>x.textContent))).slice(0,6).join(' · '));
+  console.log('Fish shelf:', (await page.$$eval('#ingResults .pick b', b=>b.map(x=>x.textContent))).slice(0,6).join(' · '));
   await page.selectOption('#fGroup','');
 
   // search finds cooked forms, raw first

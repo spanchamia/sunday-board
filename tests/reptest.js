@@ -50,13 +50,13 @@ const URL = process.env.BASE_URL || (process.env.BASE_URL || 'http://localhost:8
 
   // 6. wind the clock back a week and it returns
   await p.evaluate(() => {
-    const raw = JSON.parse(localStorage.getItem('sundayboard.v1'));
+    const raw = JSON.parse(localStorage.getItem(Object.keys(localStorage).find(k => k.startsWith('sundayboard.board.'))));
     const s = raw.state || raw;
     const r = s.repeats.find(x => x.name === 'Cilantro');
     const d = new Date(); d.setDate(d.getDate() - 8);
     const iso = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
     r.last = iso; r.from = iso;
-    localStorage.setItem('sundayboard.v1', JSON.stringify(raw));
+    localStorage.setItem(Object.keys(localStorage).find(k => k.startsWith('sundayboard.board.')), JSON.stringify(raw));
   });
   await p.reload(); await p.waitForTimeout(1000);
   await p.click('#nav button[data-v=shop]'); await p.waitForTimeout(400);
