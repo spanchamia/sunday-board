@@ -11,11 +11,10 @@ const URL = process.env.BASE_URL || 'http://localhost:8099/';
 
   await p.goto(URL); await p.waitForTimeout(700);
   await p.fill('#gName','Shiv'); await p.click('#gateGo'); await p.waitForSelector('#shell:not([hidden])');
-  await p.click('#nav button[data-v=lib]'); await p.waitForTimeout(500);
-  await p.click('#libTabs .tab[data-t=sup]'); await p.waitForTimeout(500);
+  await p.click('#nav button[data-v=lib]'); await p.waitForTimeout(700);
 
   console.log('shelves:', await p.textContent('#shelfCount'));
-  console.log('first shelves:', (await p.$$eval('.shelflist .shelf span', a=>a.slice(0,7).map(x=>x.textContent))).join(' | '));
+  console.log('top level:', (await p.$$eval('.shelflist .shelf.d0 .lbl', a=>a.map(x=>x.textContent))).join(' | '));
 
   const search = async q => { await p.fill('#libSearch', q); await p.waitForTimeout(320);
     return p.$$eval('#libRows .pick b', b => b.slice(0,6).map(x=>x.textContent.trim())); };
@@ -25,11 +24,11 @@ const URL = process.env.BASE_URL || 'http://localhost:8099/';
   console.log('  "asdfgh" ->', (await search('asdfgh')).join(' · ') || 'no matches (empty state shown)');
 
   await p.fill('#libSearch',''); await p.waitForTimeout(300);
+  await p.click('.shelflist .shelf:has-text("People & occasions")'); await p.waitForTimeout(400);
   await p.click('.shelflist .shelf:has-text("Pooja & festival")'); await p.waitForTimeout(400);
   console.log('\nPooja & festival:', await p.textContent('#libTally'), '—',
     (await p.$$eval('#libRows .pick b', b=>b.slice(0,6).map(x=>x.textContent.trim()))).join(' · '));
 
-  await p.click('.shelflist .shelf:has-text("Everything")'); await p.waitForTimeout(400);
   await p.fill('#libSearch','bin bag'); await p.waitForTimeout(350);
   await p.$eval('#libRows .pick .acts .plus:last-child', e => e.click()); await p.waitForTimeout(400);
   console.log('\nafter + :', await p.$$eval('#libRows .pick', r => r.filter(x=>x.classList.contains('insup')).map(x=>x.querySelector('b').textContent.trim())));

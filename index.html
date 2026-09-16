@@ -340,8 +340,21 @@ textarea{resize:vertical}
 .liblayout{display:grid;grid-template-columns:minmax(0,250px) minmax(0,1fr);gap:16px;align-items:start}
 .shelves{position:sticky;top:20px}
 .shelflist{display:flex;flex-direction:column;gap:1px;max-height:64vh;overflow:auto}
-.shelflist .aisle{font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;
-  color:var(--ink-3);padding:11px 6px 4px}
+.shelflist .twist{flex:0 0 auto;width:15px;color:var(--ink-3);font-size:10px;line-height:1;
+  transition:transform .12s}
+.shelflist .shelf.open>.twist{transform:rotate(90deg)}
+.shelflist .shelf.leaf>.twist{visibility:hidden}
+.shelflist .shelf.d0{font-weight:650}
+.shelflist .shelf.d1{padding-left:16px;font-weight:600}
+.shelflist .shelf.d2{padding-left:30px;font-weight:500}
+.shelflist .shelf.d3{padding-left:44px;font-weight:500;font-size:12.5px}
+.shelflist .shelf.d4{padding-left:58px;font-weight:400;font-size:12.5px}
+.shelflist .shelf.mine>.lbl::after{content:" ·";color:var(--time)}
+.crumbs{font-size:11.5px;color:var(--ink-3);margin:-4px 0 10px}
+.crumbs a{color:var(--ink-3);text-decoration:none}
+.crumbs a:hover{color:var(--time);text-decoration:underline}
+.shelflist .shelf .lbl{flex:1;min-width:0;text-align:left}
+.crumbs b{font-weight:600;color:var(--ink-2)}
 .shelflist .shelf{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;
   border:0;background:none;font:inherit;font-size:13px;font-weight:600;color:var(--ink-2);
   text-align:left;padding:5px 8px;border-radius:7px;cursor:pointer}
@@ -362,6 +375,9 @@ textarea{resize:vertical}
 .pick .acts .plus.wide{width:auto;padding:0 6px;font-size:10.5px;font-weight:700;letter-spacing:.03em}
 .pick.sup{padding-right:104px}
 .pick .plus.rep.on{border-color:var(--time);color:var(--time)}
+#shopLibSlot .shelflist{max-height:44vh}
+#shopLibSlot #libRows{max-height:46vh}
+#shopLibSlot .shelves{position:static}
 @media (max-width:880px){.liblayout{grid-template-columns:1fr}.shelves{position:static}
   .shelflist{max-height:210px}#libRows{max-height:none}}
 .tabrow .tab{border:1px solid transparent;background:none;font:inherit;font-size:13px;font-weight:600;
@@ -387,6 +403,14 @@ button.sl.picked b,button.sl.picked em{color:inherit}
 .whoList .nm span{display:block;font-size:11.5px;color:var(--ink-3);overflow:hidden;
   text-overflow:ellipsis;white-space:nowrap}
 .whoList .lk{font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-3)}
+.daypick{display:flex;gap:5px;margin:-6px 0 13px;flex-wrap:wrap}
+.daypick button{width:33px;height:33px;border:1px solid var(--rule);background:var(--card);border-radius:50%;
+  font:inherit;font-size:12px;font-weight:700;color:var(--ink-2);cursor:pointer;padding:0}
+.daypick button:hover{border-color:var(--time);color:var(--time)}
+.daypick button.on{background:var(--time);border-color:var(--time);color:var(--paper)}
+.rep-tag{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;letter-spacing:.03em;
+  color:var(--time);border:1px solid color-mix(in srgb,var(--time) 45%,transparent);
+  border-radius:99px;padding:1px 8px;margin-left:6px;vertical-align:middle}
 .slotpick{display:flex;flex-wrap:wrap;gap:6px}
 .slotpick label{display:flex;align-items:center;gap:6px;border:1px solid var(--rule);border-radius:99px;
   padding:5px 11px;font-size:12.5px;font-weight:600;color:var(--ink-2);cursor:pointer;user-select:none}
@@ -745,6 +769,9 @@ button.sl.picked b,button.sl.picked em{color:inherit}
             <label class="f"><span>Due</span><input id="tDate" type="date"></label>
             <label class="f"><span>Time</span><input id="tTime" type="time" value="17:00"></label>
           </div>
+          <label class="f"><span>Repeats</span>
+            <select id="tRepeat"></select></label>
+          <div class="daypick" id="tDays" hidden></div>
           <label class="f"><span>Notes</span><textarea id="tNotes" rows="3" placeholder="Three pages, cite two sources"></textarea></label>
           <button class="btn solid wide" type="submit">Add task</button>
         </form>
@@ -790,12 +817,17 @@ button.sl.picked b,button.sl.picked em{color:inherit}
 
         <aside class="card library">
           <div class="cardhead"><h3>Ingredient library</h3><span class="eyebrow" id="libCount"></span></div>
+          <div class="tabrow" id="ingTabs">
+            <button type="button" class="tab on" data-t="all">Everything</button>
+            <button type="button" class="tab" data-t="mine">Mine</button>
+          </div>
           <input id="ingSearch" placeholder="Search 5,000+ &mdash; &ldquo;toor dal&rdquo;, &ldquo;miso&rdquo;, &ldquo;chorizo&rdquo;" autocomplete="off">
           <div class="filters">
             <select id="fCuisine" aria-label="Filter by cuisine"></select>
             <select id="fGroup" aria-label="Filter by category"></select>
           </div>
           <div class="chiprow" id="ingChips"></div>
+          <p class="hint" id="mineNote" hidden>The ingredients you actually cook with, most used first.</p>
           <div class="reco" id="ingReco" hidden></div>
           <label class="libtoggle"><input type="checkbox" id="fCooked" checked>
             <span>Include cooked forms</span></label>
@@ -842,28 +874,28 @@ button.sl.picked b,button.sl.picked em{color:inherit}
           <button class="btn solid" id="libToCart">Go to the cart</button>
         </div>
       </div>
-      <div class="tabrow" id="libTabs">
-        <button type="button" class="tab on" data-t="ing">Ingredients</button>
-        <button type="button" class="tab" data-t="sup">Supplies</button>
-        <button type="button" class="tab" data-t="mine">Mine</button>
-      </div>
       <div class="liblayout">
         <aside class="card shelves">
           <div class="cardhead"><h3>Shelves</h3><span class="eyebrow" id="shelfCount"></span></div>
           <div class="shelflist" id="shelfList"></div>
+          <button class="btn sm wide" type="button" id="newShelfBtn" style="margin-top:10px">+ New shelf</button>
         </aside>
         <div class="card libmain">
           <div class="cardhead">
             <h3 id="libWhere">Everything</h3>
-            <span class="eyebrow" id="libTally"></span>
+            <div class="headright">
+              <span class="eyebrow" id="libTally"></span>
+              <button class="linkbtn" type="button" id="addHere">+ Add something here</button>
+            </div>
           </div>
+          <p class="crumbs" id="libCrumbs"></p>
           <input id="libSearch" placeholder="Search the shelves" autocomplete="off">
           <form class="repform" id="mineForm" hidden>
             <input id="myName" placeholder="What is it?" autocomplete="off">
             <input id="myAmt" placeholder="Qty" class="amtbox">
-            <select id="myCat" aria-label="Category"></select>
-            <input id="myNewCat" placeholder="New category name" autocomplete="off" hidden>
+            <select id="myCat" aria-label="Which shelf"></select>
             <button class="btn solid" type="submit">Save it</button>
+            <button class="linkbtn" type="button" id="myCancel">Cancel</button>
           </form>
           <div class="reco" id="libReco" hidden></div>
           <div id="libRows"></div>
@@ -881,7 +913,7 @@ button.sl.picked b,button.sl.picked em{color:inherit}
           <button class="btn sq" id="sNext" aria-label="Next week">&rsaquo;</button>
           <button class="btn sm" id="sNow">This week</button>
           <button class="btn sm" id="repBtn">&#8635; Repeats</button>
-          <button class="btn solid" id="supBtn">+ Add from the library</button>
+          <button class="btn solid" id="supBtn">+ Supplies &amp; ingredients</button>
         </div>
       </div>
 
@@ -912,6 +944,15 @@ button.sl.picked b,button.sl.picked em{color:inherit}
         <div id="repRows"></div>
         <p class="hint">On the day it comes round, it drops into your cart by itself &mdash;
           even if the board was closed, as long as you open it within a couple of months.</p>
+      </div>
+
+      <div class="card supplypanel" id="shopLib" hidden>
+        <div class="cardhead">
+          <h3>The shelves</h3>
+          <div class="headright"><span class="eyebrow">5,053 supplies &middot; 1,896 ingredients</span>
+            <button class="linkbtn" type="button" id="shopLibClose">Close</button></div>
+        </div>
+        <div id="shopLibSlot"></div>
       </div>
 
       <div class="shoplayout">
@@ -1048,7 +1089,11 @@ function normalise(raw){
   return {
     v:1, updatedAt: Number(s.updatedAt) || 0,
     events: Array.isArray(s.events) ? s.events : [],
-    tasks:  Array.isArray(s.tasks)  ? s.tasks  : [],
+    tasks: (Array.isArray(s.tasks) ? s.tasks : []).map(t => ({
+      ...t,
+      rep: (t.rep && typeof t.rep === 'object') ? t.rep : { kind:'none' },
+      times: Number(t.times) || 0
+    })),
     foods: (Array.isArray(s.foods) ? s.foods : [])
       .map(f => ({ ...f, slots: Array.isArray(f.slots) ? f.slots : [] })),
     meals:  Array.isArray(s.meals)  ? s.meals  : [],
@@ -1056,8 +1101,15 @@ function normalise(raw){
     targets: (s.targets && typeof s.targets === 'object') ? s.targets : {},
     cart:   Array.isArray(s.cart)   ? s.cart   : [],
     repeats: Array.isArray(s.repeats) ? s.repeats : [],
-    myItems: Array.isArray(s.myItems) ? s.myItems : [],
-    myCats:  Array.isArray(s.myCats)  ? s.myCats  : [],
+    myItems: (Array.isArray(s.myItems) ? s.myItems : []).map(i => ({
+      ...i,
+      catId: i.catId || (i.cat ? `mine/${String(i.cat).toLowerCase().replace(/[^a-z0-9]+/g,'-')}` : 'mine')
+    })),
+    myCats: (Array.isArray(s.myCats) ? s.myCats : [])
+      .map(c => typeof c === 'string'
+        ? { id:`mine/${String(c).toLowerCase().replace(/[^a-z0-9]+/g,'-')}`, name:c, parent:'mine' }
+        : c)
+      .filter(c => c && c.id && c.name),
     bought:  (s.bought && typeof s.bought === 'object') ? s.bought : {},
     alerts: Array.isArray(s.alerts) ? s.alerts : [],
     fired:  (s.fired && typeof s.fired === 'object') ? s.fired : {},
@@ -3636,7 +3688,7 @@ function go(v){
   if (v === 'pantry') drawFoods();
   if (v === 'week')   drawWeek();
   if (v === 'shop')   drawShop();
-  if (v === 'lib')    drawLibrary();
+  if (v === 'lib'){ $('#shopLib').hidden = true; mountLibrary('lib'); drawLibrary(); }
 }
 
 /* ── calendar ───────────────────────────────────────────────────────── */
@@ -3646,15 +3698,29 @@ $('#mNext').onclick = () => { cursor.setMonth(cursor.getMonth()+1); drawMonth();
 $('#mNow').onclick  = () => { const n = new Date(); cursor = new Date(n.getFullYear(), n.getMonth(), 1); drawMonth(); };
 $('#mAdd').onclick  = () => eventSheet(null, today());
 
+/* the six weeks the month grid is showing */
+function calFrom(){
+  const d = new Date(cursor.getFullYear(), cursor.getMonth(), 1);
+  d.setDate(d.getDate() - d.getDay());
+  return dISO(d);
+}
+function calTo(){ return shift(calFrom(), 41); }
+
 function entriesByDate(){
   const map = {};
   const add = (d, o) => { (map[d] ||= []).push(o); };
   for (const ev of state.events)
     add(parts(ev.startAt).date,
         { k:'ev', at:ev.startAt, name:ev.title, meta:clock(ev.startAt), ev });
-  for (const t of state.tasks)
-    if (t.dueAt) add(parts(t.dueAt).date,
+  for (const t of state.tasks){
+    if (!t.dueAt) continue;
+    add(parts(t.dueAt).date,
         { k:'tk', at:t.dueAt, name:t.title, meta:clock(t.dueAt), task:t, off:t.done });
+    // a task that repeats should be visible on the days it will come back
+    for (const ms of occurrencesBetween(t, calFrom(), calTo()))
+      add(parts(ms).date,
+          { k:'tk', at:ms, name:t.title, meta:clock(ms), task:t, off:true, ahead:true });
+  }
   for (const m of state.meals){
     const food = state.foods.find(f => f.id === m.foodId); if (!food) continue;
     add(m.date, { k:'ml', at:at(m.date, slotOf(m.slot).time),
@@ -3797,14 +3863,169 @@ $('#tFilter').addEventListener('click', e => {
   $$('#tFilter button').forEach(x => x.classList.toggle('on', x === b));
   drawTasks();
 });
+/* ── tasks that come back ───────────────────────────────────────────────
+   A repeating task is one row, not a pile of them. Tick it off and its due
+   date rolls to the next day that matches, its reminders re-arm, and the
+   count of how many times you have done it goes up.                      */
+const REPEATS = [
+  ['none',        "Doesn't repeat"],
+  ['daily',       'Every day'],
+  ['weekdays',    'Every weekday (Mon–Fri)'],
+  ['weekends',    'Every weekend (Sat & Sun)'],
+  ['weekly',      'Every week, on the due day'],
+  ['fortnightly', 'Every 2 weeks'],
+  ['monthly',     'Every month, on the same date'],
+  ['custom',      'Choose the days…']
+];
+const DAY_LETTER = ['S','M','T','W','T','F','S'];
+const DAY_NAME = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+
+const repKind = t => (t.rep && t.rep.kind) || 'none';
+const repeats = t => repKind(t) !== 'none';
+
+/** Which weekdays a task lands on, for the day-of-week kinds. */
+function repDays(t){
+  switch (repKind(t)){
+    case 'daily':    return [0,1,2,3,4,5,6];
+    case 'weekdays': return [1,2,3,4,5];
+    case 'weekends': return [0,6];
+    case 'weekly':   return t.dueAt ? [new Date(t.dueAt).getDay()] : [];
+    case 'custom':   return ((t.rep && t.rep.days) || []).slice().sort();
+    default:         return [];
+  }
+}
+
+function repLabel(t){
+  const k = repKind(t);
+  if (k === 'none') return '';
+  if (k === 'daily') return 'Every day';
+  if (k === 'weekdays') return 'Weekdays';
+  if (k === 'weekends') return 'Weekends';
+  if (k === 'weekly') return t.dueAt ? `Every ${DAY_NAME[new Date(t.dueAt).getDay()]}` : 'Every week';
+  if (k === 'fortnightly') return 'Every 2 weeks';
+  if (k === 'monthly') return 'Monthly';
+  const d = repDays(t);
+  if (!d.length) return 'Repeats';
+  if (d.length === 7) return 'Every day';
+  return d.map(n => DAY_NAME[n].slice(0,3)).join(', ');
+}
+
+/** The first occurrence strictly after `fromMs`. */
+function nextDueAfter(t, fromMs){
+  const k = repKind(t);
+  if (!t.dueAt || k === 'none') return null;
+  const p = parts(t.dueAt), time = p.time;
+
+  if (k === 'monthly'){
+    const first = fromISO(p.date);
+    const dom = first.getDate();
+    let y = first.getFullYear(), m = first.getMonth(), cur = t.dueAt, guard = 0;
+    while (cur <= fromMs && guard++ < 240){
+      m++; if (m > 11){ m = 0; y++; }
+      const last = new Date(y, m + 1, 0).getDate();     // clamps the 31st into February
+      cur = at(dISO(new Date(y, m, Math.min(dom, last))), time);
+    }
+    return guard >= 240 ? null : cur;
+  }
+
+  if (k === 'fortnightly'){
+    let iso = p.date, cur = t.dueAt, guard = 0;
+    while (cur <= fromMs && guard++ < 300){ iso = shift(iso, 14); cur = at(iso, time); }
+    return guard >= 300 ? null : cur;
+  }
+
+  const days = repDays(t);
+  if (!days.length) return null;
+  for (let i = 1; i <= 400; i++){
+    const iso = shift(p.date, i);
+    if (!days.includes(fromISO(iso).getDay())) continue;
+    const ms = at(iso, time);
+    if (ms > fromMs) return ms;
+  }
+  return null;
+}
+
+/** Every occurrence between two dates — what the calendar draws. */
+function occurrencesBetween(t, fromISO_, toISO){
+  const out = [];
+  if (!t.dueAt || !repeats(t)) return out;
+  let ms = t.dueAt, guard = 0;
+  const toMs = at(toISO, '23:59');
+  while (ms && ms < at(fromISO_, '00:00') && guard++ < 400) ms = nextDueAfter(t, ms);
+  while (ms && ms <= toMs && guard++ < 400){
+    if (ms !== t.dueAt) out.push(ms);
+    ms = nextDueAfter(t, ms);
+  }
+  return out;
+}
+
+/* Ticking a repeating task moves it on rather than ending it. */
+function completeRepeat(t){
+  const from = Math.max(t.dueAt, Date.now());
+  const next = nextDueAfter(t, from);
+  t.times = (t.times || 0) + 1;
+  t.lastDone = Date.now();
+  if (!next){ t.done = true; return null; }
+  t.dueAt = next;
+  t.done = false;
+  dropAlertsFor('task', t.id);
+  clearFired('task', t.id);
+  return next;
+}
+
+/* ── the repeat control, shared by the add form and the edit sheet ───── */
+function fillRepeatSelect(sel, kind){
+  sel.innerHTML = REPEATS.map(([k, label]) =>
+    `<option value="${k}">${esc(label)}</option>`).join('');
+  sel.value = kind || 'none';
+}
+
+function drawDayPick(box, days){
+  box.innerHTML = DAY_LETTER.map((l, i) =>
+    `<button type="button" data-d="${i}" class="${days.includes(i) ? 'on' : ''}"
+       aria-label="${DAY_NAME[i]}" aria-pressed="${days.includes(i)}">${l}</button>`).join('');
+  box.querySelectorAll('button').forEach(b => {
+    b.onclick = () => {
+      b.classList.toggle('on');
+      b.setAttribute('aria-pressed', b.classList.contains('on'));
+    };
+  });
+}
+
+const pickedDays = box => [...box.querySelectorAll('button.on')].map(b => +b.dataset.d);
+
+function wireRepeat(sel, box, rep){
+  fillRepeatSelect(sel, rep && rep.kind);
+  drawDayPick(box, (rep && rep.days) || []);
+  const sync = () => { box.hidden = sel.value !== 'custom'; };
+  sel.onchange = sync; sync();
+}
+
+function readRepeat(sel, box){
+  const kind = sel.value;
+  if (kind === 'custom'){
+    const days = pickedDays(box);
+    return days.length ? { kind:'custom', days } : { kind:'none' };
+  }
+  return { kind };
+}
+
+wireRepeat($('#tRepeat'), $('#tDays'), null);
+
 $('#taskForm').addEventListener('submit', e => {
   e.preventDefault();
   const title = $('#tTitle').value.trim(); if (!title) return;
   const date = $('#tDate').value;
+  const rep = readRepeat($('#tRepeat'), $('#tDays'));
+  if (rep.kind !== 'none' && !date)
+    return toast('A repeating task needs a due date to repeat from');
   state.tasks.push({ id:uid(), title, notes:$('#tNotes').value.trim(),
-                     dueAt: date ? at(date, $('#tTime').value || '17:00') : null, done:false });
+                     dueAt: date ? at(date, $('#tTime').value || '17:00') : null,
+                     done:false, rep, times:0 });
   $('#tTitle').value = ''; $('#tNotes').value = '';
-  touch(); drawTasks(); sweep(); toast('Task added');
+  $('#tRepeat').value = 'none'; $('#tDays').hidden = true; drawDayPick($('#tDays'), []);
+  touch(); drawTasks(); sweep();
+  toast(rep.kind === 'none' ? 'Task added' : `Task added — ${repLabel({ rep, dueAt: date ? at(date,'12:00') : null }).toLowerCase()}`);
 });
 
 function duePill(t){
@@ -3827,8 +4048,10 @@ function drawTasks(){
     <div class="row" data-id="${t.id}">
       <input type="checkbox" ${t.done ? 'checked' : ''} data-a="tog" aria-label="Mark done">
       <div class="fill">
-        <div class="name ${t.done ? 'off' : ''}">${esc(t.title)}</div>
-        <div style="margin-top:5px">${duePill(t)}</div>
+        <div class="name ${t.done ? 'off' : ''}">${esc(t.title)}${
+          repeats(t) ? `<span class="rep-tag">↻ ${esc(repLabel(t))}</span>` : ''}</div>
+        <div style="margin-top:5px">${duePill(t)}${
+          t.times ? `<span class="pill">done ${t.times}×</span>` : ''}</div>
         ${t.notes ? `<div class="note">${esc(t.notes)}</div>` : ''}
       </div>
       <button class="btn sm" data-a="edit">Edit</button>
@@ -3838,7 +4061,16 @@ function drawTasks(){
   box.querySelectorAll('.row').forEach(row => {
     const t = state.tasks.find(x => String(x.id) === row.dataset.id);
     if (!t) return;
-    row.querySelector('[data-a=tog]').onchange = e => { t.done = e.target.checked; touch(); drawTasks(); };
+    row.querySelector('[data-a=tog]').onchange = e => {
+      if (e.target.checked && repeats(t) && t.dueAt){
+        const next = completeRepeat(t);
+        touch(); drawTasks(); sweep();
+        toast(next ? `Done — next one ${stamp(next)}` : 'Done, and that was the last one');
+        return;
+      }
+      t.done = e.target.checked;
+      touch(); drawTasks();
+    };
     row.querySelector('[data-a=del]').onclick = () => {
       state.tasks = state.tasks.filter(x => String(x.id) !== String(t.id));
       dropAlertsFor('task', t.id);
@@ -3850,13 +4082,17 @@ function drawTasks(){
 
 function taskSheet(t){
   const p = t.dueAt ? parts(t.dueAt) : { date:'', time:'17:00' };
+  setTimeout(() => wireRepeat($('#sRepeat'), $('#sDays'), t.rep), 0);
   sheet('Edit task', `
     <label class="f"><span>Task</span><input id="sTitle" value="${esc(t.title)}"></label>
     <div class="pair">
       <label class="f"><span>Due</span><input id="sDate" type="date" value="${p.date}"></label>
       <label class="f"><span>Time</span><input id="sTime" type="time" value="${p.time}"></label>
     </div>
-    <label class="f"><span>Notes</span><textarea id="sNotes" rows="3">${esc(t.notes||'')}</textarea></label>`,
+    <label class="f"><span>Repeats</span><select id="sRepeat"></select></label>
+    <div class="daypick" id="sDays" hidden></div>
+    <label class="f"><span>Notes</span><textarea id="sNotes" rows="3">${esc(t.notes||'')}</textarea></label>
+    ${t.times ? `<p class="hint">Done ${t.times} time${t.times === 1 ? '' : 's'} so far.</p>` : ''}`,
     [
       { label:'Delete', warn:true, go:() => {
         state.tasks = state.tasks.filter(x => String(x.id) !== String(t.id));
@@ -3867,12 +4103,15 @@ function taskSheet(t){
       { label:'Cancel', go:shut },
       { label:'Save', solid:true, go:() => {
         const d = $('#sDate').value;
+        const rep = readRepeat($('#sRepeat'), $('#sDays'));
+        if (rep.kind !== 'none' && !d) return toast('A repeating task needs a due date');
         t.title = $('#sTitle').value.trim() || t.title;
         t.notes = $('#sNotes').value.trim();
+        t.rep = rep;
         const nextDue = d ? at(d, $('#sTime').value || '17:00') : null;
         if (nextDue !== t.dueAt) clearFired('task', t.id);
         t.dueAt = nextDue;
-        touch(); shut(); drawTasks(); toast('Task updated');
+        touch(); shut(); drawTasks(); sweep(); toast('Task updated');
       }}
     ]);
 }
@@ -3968,7 +4207,7 @@ function addFromLibrary(ix){
 $('#ingAdd').onclick = () => { $('#ingBox').appendChild(ingLine()); refreshFoodNut(); };
 
 /* the searchable library */
-const FILTER = { cuisine:'', group:'', cooked:true };
+const FILTER = { cuisine:'', group:'', cooked:true, mine:false };
 
 function fillFilters(){
   const cui = $('#fCuisine');
@@ -4003,22 +4242,16 @@ function drawIngChips(){
 function drawMineRows(box){
   // if a category is showing, only your things filed under it belong here
   const mine = searchMine($('#ingSearch').value, 8, '')
-    .filter(m => !FILTER.group || m.cat === FILTER.group);
+    .filter(m => !FILTER.group || (m.cat || '') === FILTER.group);
   if (!mine.length) return;
   const rows = mine.map(m =>
-    `<div class="pick mineown" data-my="${esc(m.name)}" title="${esc(m.cat || 'Yours')}">
+    `<div class="pick mineown" draggable="true" data-my="${esc(m.name)}" title="${esc(m.cat || 'Yours')}">
       <b>${esc(m.name)}</b><span class="prep">yours</span>
       <em>no nutrition</em>
       <button class="plus" type="button" aria-label="Add ${esc(m.name)} to the recipe">+</button>
     </div>`).join('');
   box.insertAdjacentHTML('afterbegin', rows);
-  box.querySelectorAll('.mineown').forEach(el => {
-    const name = el.dataset.my;
-    const add = e => { e.stopPropagation();
-      $('#ingBox').appendChild(ingLine({ name, qty:1, unit:'' })); refreshFoodNut(); };
-    el.querySelector('.plus').onclick = add;
-    el.onclick = add;
-  });
+  wirePickRows(box);
 }
 
 function drawIngReco(){
@@ -4053,7 +4286,106 @@ function drawIngReco(){
   });
 }
 
+/* ── the ingredients you actually use ───────────────────────────────────
+   The same shelf the Library calls Mine, offered where a recipe is being
+   built: what your dishes lean on, what you keep buying, and the things you
+   typed in yourself — most used first, and draggable like anything else.  */
+function myIngredients(){
+  const score = new Map();
+  const bump = (name, by) => {
+    const k = cartKey(name);
+    score.set(k, (score.get(k) || 0) + by);
+  };
+  for (const f of state.foods) for (const g of (f.ingredients || [])) bump(g.name, 3);
+  for (const k of Object.keys(state.bought || {})) score.set(k, (score.get(k) || 0) + state.bought[k]);
+
+  const out = [];
+  const seen = new Set();
+  const take = it => {
+    const k = cartKey(it.name);
+    if (seen.has(k)) return;
+    seen.add(k); out.push(it);
+  };
+  [...score.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .forEach(([k]) => {
+      const hit = ING.find(i => i.raw && cartKey(i.name) === k)
+               || myItems().find(i => cartKey(i.name) === k);
+      if (hit) take(hit);
+    });
+  myItems().forEach(take);                       // yours, even if never used yet
+  return out;
+}
+
+function drawMineTab(){
+  const box = $('#ingResults');
+  const terms = $('#ingSearch').value.trim().toLowerCase().split(/\s+/).filter(Boolean);
+  const list = myIngredients()
+    .filter(i => terms.every(t => i.name.toLowerCase().includes(t)));
+
+  $('#libCount').textContent = list.length
+    ? `${list.length} you use` : '';
+  if (!list.length){
+    box.innerHTML = `<div class="none">${terms.length
+      ? 'Nothing of yours matched.'
+      : 'Nothing yet — save a dish or two and the things you cook with land here.'}</div>`;
+    return;
+  }
+  box.innerHTML = list.map(i => i.ix === undefined
+    ? `<div class="pick mineown" data-my="${esc(i.name)}" draggable="true" title="Yours">
+         <b>${esc(i.name)}</b><span class="prep">yours</span><em>no nutrition</em>
+         <button class="plus" type="button" aria-label="Add ${esc(i.name)} to the recipe">+</button>
+       </div>`
+    : `<div class="pick" draggable="true" data-ix="${i.ix}" title="${esc(i.cat)}">
+         <b>${esc(i.name)}</b>
+         ${i.indian ? '<span class="flag">IN</span>' : ''}
+         <em>${Math.round(i.n.kcal)} kcal</em>
+         <button class="plus" type="button" aria-label="Add ${esc(i.name)} to the recipe">+</button>
+       </div>`).join('');
+  wirePickRows(box);
+}
+
+/* drag and click behaviour, shared by both tabs */
+function wirePickRows(box){
+  box.querySelectorAll('.pick').forEach(el => {
+    const own = el.classList.contains('mineown');
+    const name = el.dataset.my;
+    const ix = own ? null : +el.dataset.ix;
+    el.addEventListener('dragstart', e => {
+      e.dataTransfer.setData('text/plain', JSON.stringify(
+        own ? { t:'mying', name } : { t:'ing', ix }));
+      e.dataTransfer.effectAllowed = 'copy';
+    });
+    const add = e => {
+      e.stopPropagation();
+      if (own){ $('#ingBox').appendChild(ingLine({ name, qty:1, unit:'' })); refreshFoodNut(); }
+      else addFromLibrary(ix);
+    };
+    el.querySelector('.plus').onclick = add;
+    el.onclick = own ? add : () => factSheet(ix);
+  });
+}
+
+$('#ingTabs').addEventListener('click', e => {
+  const b = e.target.closest('.tab');
+  if (!b) return;
+  FILTER.mine = b.dataset.t === 'mine';
+  $$('#ingTabs .tab').forEach(t => t.classList.toggle('on', t === b));
+  drawPicker();
+});
+
 function drawPicker(){
+  const mineTab = !!FILTER.mine;
+  $('#ingChips').hidden = mineTab;
+  $('#ingReco').hidden = mineTab;
+  $('#mineNote').hidden = !mineTab;
+  $('.library .filters').hidden = mineTab;
+  $('.library .libtoggle').hidden = mineTab;
+  $('#ingSearch').placeholder = mineTab
+    ? 'Search what you use'
+    : 'Search 5,000+ — “toor dal”, “miso”, “chorizo”';
+  if (mineTab) return drawMineTab();
+
   $('#libCount').textContent = `${ING.length.toLocaleString()} ingredients`;
   drawIngChips();
   drawIngReco();
@@ -4073,15 +4405,7 @@ function drawPicker(){
       <button class="plus" type="button" aria-label="Add ${esc(i.name)} to the recipe">+</button>
     </div>`).join('');
 
-  box.querySelectorAll('.pick').forEach(el => {
-    const ix = +el.dataset.ix;
-    el.addEventListener('dragstart', e => {
-      e.dataTransfer.setData('text/plain', JSON.stringify({ t:'ing', ix }));
-      e.dataTransfer.effectAllowed = 'copy';
-    });
-    el.querySelector('.plus').onclick = e => { e.stopPropagation(); addFromLibrary(ix); };
-    el.onclick = () => factSheet(ix);
-  });
+  wirePickRows(box);
   drawMineRows(box);
 }
 
@@ -4147,6 +4471,10 @@ dropZone.addEventListener('drop', e => {
   e.preventDefault(); dropZone.classList.remove('over');
   let d; try { d = JSON.parse(e.dataTransfer.getData('text/plain')); } catch { return; }
   if (d && d.t === 'ing') addFromLibrary(d.ix);
+  else if (d && d.t === 'mying'){
+    $('#ingBox').appendChild(ingLine({ name:d.name, qty:1, unit:'' }));
+    refreshFoodNut();
+  }
 });
 
 /* which meals a dish suits — an empty list means "any of them" */
@@ -9805,7 +10133,6 @@ function searchSup(q, limit, cat){
   return out.slice(0, limit).map(o => o.it);
 }
 
-const SUPF = { tab:'ing', cat:'' };
 
 /* ── your own items and categories ──────────────────────────────────────
    The two libraries between them cover most of a shopping trip, but not
@@ -9814,18 +10141,6 @@ const SUPF = { tab:'ing', cat:'' };
    turns up in the recipe builder as well as the cart.                    */
 const myItems = () => state.myItems || (state.myItems = []);
 const myCats  = () => state.myCats  || (state.myCats  = []);
-
-function allCatsFor(tab){
-  if (tab === 'ing')  return [...ING_CATS].sort();
-  if (tab === 'sup')  return [...SUP_CATS];
-  return [...new Set([...myCats(), ...myItems().map(i => i.cat)])].filter(Boolean).sort();
-}
-
-function catCount(tab, cat){
-  if (tab === 'ing')  return ING_CAT_COUNT[cat] || 0;
-  if (tab === 'sup')  return SUP.filter(i => i.cat === cat).length;
-  return myItems().filter(i => i.cat === cat).length;
-}
 
 function searchMine(q, limit, cat){
   const terms = String(q || '').toLowerCase().split(/\s+/).filter(Boolean);
@@ -9836,15 +10151,248 @@ function searchMine(q, limit, cat){
     .slice(0, limit);
 }
 
-function fillSupCats(){
-  drawMyCatSelect();
+/* ── the library, as a tree ─────────────────────────────────────────────
+   37 supply categories and 106 ingredient ones read as a wall unless they
+   are nested the way a house actually is: House supplies → Kitchen →
+   Ingredients → Vegetables → Leaves & greens. Every node knows how to list
+   its own things; a branch lists everything underneath it.              */
+const SHELF_TREE = [
+  ['house', 'House supplies', [
+    ['house/kitchen', 'Kitchen supplies', [
+      ['house/kitchen/cookware',   'Cookware',         'Cookware'],
+      ['house/kitchen/bakeware',   'Bakeware',         'Bakeware'],
+      ['house/kitchen/tools',      'Kitchen tools',    'Kitchen tools'],
+      ['house/kitchen/tableware',  'Tableware',        'Tableware'],
+      ['house/kitchen/storage',    'Food storage',     'Food storage'],
+      ['house/kitchen/appliances', 'Small appliances', 'Small appliances'],
+      ['house/kitchen/ingredients', 'Ingredients', 'INGREDIENTS']
+    ]],
+    ['house/clean', 'Cleaning & laundry', [
+      ['house/clean/cleaning', 'Cleaning',            'Cleaning'],
+      ['house/clean/laundry',  'Laundry',             'Laundry'],
+      ['house/clean/paper',    'Paper & disposables', 'Paper & disposables'],
+      ['house/clean/pests',    'Pest control',        'Pest control']
+    ]],
+    ['house/bath', 'Bathroom & personal care', [
+      ['house/bath/bathroom', 'Bathroom',           'Bathroom'],
+      ['house/bath/personal', 'Personal care',      'Personal care'],
+      ['house/bath/health',   'Health & first aid', 'Health & first aid'],
+      ['house/bath/shoes',    'Shoe care',          'Shoe care']
+    ]],
+    ['house/living', 'Bedroom & living', [
+      ['house/living/bedding', 'Bedding & linens',       'Bedding & linens'],
+      ['house/living/storage', 'Storage & organisation', 'Storage & organisation'],
+      ['house/living/decor',   'Home decor',             'Home decor']
+    ]]
+  ]],
+  ['diy', 'Home & garden', [
+    ['diy/hardware',  'Hardware',              'Hardware'],
+    ['diy/tools',     'Tools',                 'Tools'],
+    ['diy/plumbing',  'Plumbing',              'Plumbing'],
+    ['diy/electrical','Electrical & lighting', 'Electrical & lighting'],
+    ['diy/batteries', 'Batteries & power',     'Batteries & power'],
+    ['diy/garden',    'Garden & outdoor',      'Garden & outdoor'],
+    ['diy/safety',    'Safety & emergency',    'Safety & emergency'],
+    ['diy/seasonal',  'Seasonal',              'Seasonal'],
+    ['diy/car',       'Car care',              'Car care']
+  ]],
+  ['work', 'Work & study', [
+    ['work/office',      'Office & stationery',      'Office & stationery'],
+    ['work/school',      'School supplies',          'School supplies'],
+    ['work/electronics', 'Electronics accessories',  'Electronics accessories'],
+    ['work/craft',       'Craft & hobby',            'Craft & hobby'],
+    ['work/sewing',      'Sewing & mending',         'Sewing & mending']
+  ]],
+  ['people', 'People & occasions', [
+    ['people/baby',   'Baby & kids',         'Baby & kids'],
+    ['people/pets',   'Pet supplies',        'Pet supplies'],
+    ['people/sport',  'Sports & fitness',    'Sports & fitness'],
+    ['people/travel', 'Travel',              'Travel'],
+    ['people/party',  'Party & celebration', 'Party & celebration'],
+    ['people/pooja',  'Pooja & festival',    'Pooja & festival']
+  ]]
+];
+
+/* the 17 groups the ingredient data ships with, and which fine shelves
+   sit under each of them */
+const AISLES = ['Vegetables','Fruits','Herbs & spices','Grains & flours','Dals & pulses',
+  'Dairy & eggs','Meat & poultry','Fish & seafood','Nuts & seeds','Oils & fats',
+  'Bread & noodles','Condiments & sauces','Plant proteins','Fungi & sea greens',
+  'Beverages','Sweeteners','Baking & pantry'];
+
+const ING_AISLE = (() => {
+  const m = {};
+  for (const i of BASE){ (m[i.group] ||= new Set()).add(i.cat); }
+  return m;
+})();
+
+const slugId = s => String(s).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'x';
+
+/* built-in nodes, flattened into something we can walk */
+function buildNodes(){
+  const nodes = new Map();
+  const walk = (rows, parent, depth) => {
+    for (const [id, name, spec] of rows){
+      const node = { id, name, parent, depth, kids:[], sup:null, ing:null };
+      nodes.set(id, node);
+      if (parent) nodes.get(parent).kids.push(id);
+      if (Array.isArray(spec)) walk(spec, id, depth + 1);
+      else if (spec === 'INGREDIENTS'){
+        for (const aisle of AISLES){
+          if (!ING_AISLE[aisle]) continue;
+          const aid = `${id}/${slugId(aisle)}`;
+          nodes.set(aid, { id:aid, name:aisle, parent:id, depth:depth + 1, kids:[], sup:null, ing:null });
+          node.kids.push(aid);
+          for (const shelf of [...ING_AISLE[aisle]].sort()){
+            const sid = `${aid}/${slugId(shelf)}`;
+            nodes.set(sid, { id:sid, name:shelf, parent:aid, depth:depth + 2, kids:[], sup:null, ing:shelf });
+            nodes.get(aid).kids.push(sid);
+          }
+        }
+      } else if (typeof spec === 'string'){
+        node.sup = spec;
+      }
+    }
+  };
+  walk(SHELF_TREE, null, 0);
+  // Mine fills itself: what you buy again and again, what your dishes lean on,
+  // what is on a repeat, and the things you typed in yourself.
+  nodes.set('mine', { id:'mine', name:'Mine', parent:null, depth:0, kids:[], sup:null, ing:null, mine:true });
+  for (const [id, name, auto] of [
+    ['mine/often',  'Things you buy often', 'often'],
+    ['mine/dishes', 'In your dishes',       'dishes'],
+    ['mine/repeat', 'On repeat',            'repeat'],
+    ['mine/yours',  'Added by you',         'yours']
+  ]){
+    nodes.set(id, { id, name, parent:'mine', depth:1, kids:[], sup:null, ing:null, mine:true, auto });
+    nodes.get('mine').kids.push(id);
+  }
+  return nodes;
 }
 
-function drawMyCatSelect(){
-  const mine = allCatsFor('mine');
-  const known = [...new Set([...mine, ...SUP_CATS])];
-  $('#myCat').innerHTML = known.map(c => `<option value="${esc(c)}">${esc(c)}</option>`).join('') +
-    '<option value="__new">+ New category…</option>';
+let NODES = buildNodes();
+
+/* the shelves you added yourself, hung wherever you put them */
+function withMyShelves(){
+  NODES = buildNodes();
+  for (const c of myCats()){
+    if (NODES.has(c.id)) continue;
+    const parent = NODES.has(c.parent) ? c.parent : 'mine';
+    NODES.set(c.id, { id:c.id, name:c.name, parent, depth:NODES.get(parent).depth + 1,
+                      kids:[], sup:null, ing:null, mine:true });
+  }
+  // re-hang them in order, so a shelf inside a shelf lands in the right place
+  for (const c of myCats()){
+    const node = NODES.get(c.id); if (!node) continue;
+    const parent = NODES.get(node.parent);
+    if (parent && !parent.kids.includes(c.id)) parent.kids.push(c.id);
+  }
+  for (const c of myCats()){
+    const node = NODES.get(c.id);
+    if (node && NODES.get(node.parent)) node.depth = NODES.get(node.parent).depth + 1;
+  }
+  return NODES;
+}
+
+const ROOT_IDS = () => ['mine', ...SHELF_TREE.map(r => r[0])];
+
+/** Every shelf under a node that actually holds something. */
+function leavesUnder(id){
+  const out = [];
+  const walk = nid => {
+    const n = NODES.get(nid); if (!n) return;
+    const holds = n.sup || n.ing || n.mine;
+    if (holds && ownItems(nid).length) out.push(nid);
+    for (const k of n.kids) walk(k);
+  };
+  walk(id);
+  return out;
+}
+
+/** What sits on this shelf itself, ignoring the ones below it. */
+function ownItems(id){
+  const n = NODES.get(id);
+  if (!n) return [];
+  if (n.sup) return SUP.filter(i => i.cat === n.sup);
+  if (n.ing) return ING.filter(i => i.raw && i.cat === n.ing);
+  if (n.auto) return autoShelf(n.auto);
+  if (n.mine) return myItems().filter(i => (i.catId || 'mine') === id);
+  return [];
+}
+
+/** The catalogue row for a name, whichever list it came from. */
+const CATALOGUE = () => [...myItems(), ...SUP, ...ING.filter(i => i.raw)];
+function lookup(name){
+  const k = cartKey(name);
+  return CATALOGUE().find(i => cartKey(i.name) === k) || null;
+}
+
+function autoShelf(kind){
+  const seen = new Set(), out = [];
+  const push = it => {
+    if (!it) return;
+    const k = cartKey(it.name);
+    if (seen.has(k)) return;
+    seen.add(k); out.push(it);
+  };
+
+  if (kind === 'often'){
+    const counts = state.bought || {};
+    Object.keys(counts)
+      .filter(k => counts[k] > 1)                 // once is not a habit
+      .sort((a, b) => counts[b] - counts[a])
+      .forEach(k => push(CATALOGUE().find(i => cartKey(i.name) === k)));
+    return out;
+  }
+
+  if (kind === 'dishes'){
+    const used = {};
+    for (const f of state.foods) for (const g of (f.ingredients || []))
+      used[cartKey(g.name)] = (used[cartKey(g.name)] || 0) + 1;
+    Object.keys(used).sort((a, b) => used[b] - used[a])
+      .forEach(k => push(CATALOGUE().find(i => cartKey(i.name) === k)));
+    return out;
+  }
+
+  if (kind === 'repeat'){
+    for (const r of state.repeats || []) push(lookup(r.name) || { name:r.name, cat:'yours' });
+    return out;
+  }
+
+  return myItems();                                // 'yours'
+}
+
+/** "Kitchen supplies › Cookware", shortened for a heading. */
+function shelfPath(id){
+  const path = pathOf(id).map(n => n.name);
+  return path.length > 2 ? path.slice(-2).join(' › ') : path.join(' › ');
+}
+
+function descendants(id){
+  const out = [id];
+  const node = NODES.get(id);
+  if (node) for (const k of node.kids) out.push(...descendants(k));
+  return out;
+}
+
+/** Everything filed at a node or anywhere beneath it. */
+function itemsAt(id){
+  const out = [];
+  for (const nid of descendants(id)) out.push(...ownItems(nid));
+  return out;
+}
+
+const countCache = new Map();
+function countAt(id){
+  if (!countCache.has(id)) countCache.set(id, itemsAt(id).length);
+  return countCache.get(id);
+}
+
+function pathOf(id){
+  const out = [];
+  let n = NODES.get(id);
+  while (n){ out.unshift(n); n = NODES.get(n.parent); }
+  return out;
 }
 
 /* ── what to suggest ────────────────────────────────────────────────────
@@ -9869,8 +10417,8 @@ function noteBought(name){
   state.bought[k] = (state.bought[k] || 0) + 1;
 }
 
-function suggestions(tab, n = 10){
-  const pool = tab === 'ing' ? ING.filter(i => i.raw) : tab === 'sup' ? SUP : myItems();
+function suggestions(n = 10){
+  const pool = itemsAt(LIB.at || 'house');
   const seen = new Set(), out = [];
   const push = it => {
     const k = cartKey(it.name);
@@ -9879,82 +10427,69 @@ function suggestions(tab, n = 10){
   };
   pool.filter(i => boughtCount(i.name) > 0)
       .sort((a, b) => boughtCount(b.name) - boughtCount(a.name)).forEach(push);
-  if (tab === 'ing'){
-    const used = {};
-    for (const f of state.foods) for (const g of (f.ingredients || []))
-      used[cartKey(g.name)] = (used[cartKey(g.name)] || 0) + 1;
-    pool.filter(i => used[cartKey(i.name)])
-        .sort((a, b) => used[cartKey(b.name)] - used[cartKey(a.name)]).forEach(push);
-  }
-  for (const name of (tab === 'ing' ? STAPLES_ING : tab === 'sup' ? STAPLES_SUP : [])){
-    const hit = pool.find(i => cartKey(i.name) === cartKey(name));
+  const used = {};
+  for (const f of state.foods) for (const g of (f.ingredients || []))
+    used[cartKey(g.name)] = (used[cartKey(g.name)] || 0) + 1;
+  pool.filter(i => used[cartKey(i.name)])
+      .sort((a, b) => used[cartKey(b.name)] - used[cartKey(a.name)]).forEach(push);
+  const names = new Set(pool.map(i => cartKey(i.name)));
+  for (const nm of [...STAPLES_ING, ...STAPLES_SUP]){
+    if (!names.has(cartKey(nm))) continue;
+    const hit = pool.find(i => cartKey(i.name) === cartKey(nm));
     if (hit) push(hit);
   }
   return out.slice(0, n);
 }
 
-/* ── the library page ───────────────────────────────────────────────────
-   A shelf list you can see without hunting for it, and the shelf's
-   contents beside it. Ingredient shelves sit under the aisle they belong
-   to, so 106 categories read as a shop rather than a wall of chips.     */
-const AISLES = ['Vegetables','Fruits','Herbs & spices','Grains & flours','Dals & pulses',
-  'Dairy & eggs','Meat & poultry','Fish & seafood','Nuts & seeds','Oils & fats',
-  'Bread & noodles','Condiments & sauces','Plant proteins','Fungi & sea greens',
-  'Beverages','Sweeteners','Baking & pantry'];
-
-const ING_AISLE = (() => {
-  const m = {};
-  for (const i of BASE){ (m[i.group] ||= new Set()).add(i.cat); }
-  return m;
-})();
-
-function shelfPool(){
-  if (SUPF.tab === 'ing')  return ING.filter(i => i.raw);
-  if (SUPF.tab === 'sup')  return SUP;
-  return myItems();
-}
+/* ── drawing it ─────────────────────────────────────────────────────── */
+const LIB = { at:'house', open:new Set(['mine','house','house/kitchen']), q:'', more:new Set(), allShelves:false };
 
 function drawShelves(){
   const box = $('#shelfList');
-  const tab = SUPF.tab;
-  const row = (c, count, cls, label) =>
-    `<button type="button" class="shelf${cls || ''}${c === SUPF.cat ? ' on' : ''}" data-c="${esc(c)}">` +
-    `<span>${esc(label || c)}</span><i>${count}</i></button>`;
-
-  let html = row('', shelfPool().length, '', 'Everything');
-  if (tab === 'ing'){
-    html += AISLES.filter(a => ING_AISLE[a]).map(a =>
-      `<div class="aisle">${esc(a)}</div>` +
-      [...ING_AISLE[a]].sort().map(c => row(c, ING_CAT_COUNT[c], ' sub')).join('')).join('');
-  } else if (tab === 'sup'){
-    html += SUP_CATS.map(c => row(c, SUP.filter(i => i.cat === c).length)).join('');
-  } else {
-    const cats = allCatsFor('mine');
-    html += cats.length
-      ? cats.map(c => row(c, myItems().filter(i => i.cat === c).length)).join('')
-      : '<div class="aisle">Nothing of your own yet</div>';
-  }
-  box.innerHTML = html;
-  const shelves = tab === 'ing' ? ING_CATS.length
-    : tab === 'sup' ? SUP_CATS.length : allCatsFor('mine').length;
-  $('#shelfCount').textContent = shelves ? `${shelves} ${shelves === 1 ? 'shelf' : 'shelves'}` : '';
+  const rows = [];
+  const walk = id => {
+    const n = NODES.get(id); if (!n) return;
+    const open = LIB.open.has(id);
+    const leaf = !n.kids.length;
+    rows.push(`<button type="button" class="shelf d${Math.min(4, n.depth)}${leaf ? ' leaf' : ''}${
+      open ? ' open' : ''}${n.mine ? ' mine' : ''}${id === LIB.at ? ' on' : ''}" data-id="${esc(id)}">
+      <span class="twist">▶</span><span class="lbl">${esc(n.name)}</span><i>${countAt(id)}</i></button>`);
+    if (open) for (const k of n.kids) walk(k);
+  };
+  for (const r of ROOT_IDS()) walk(r);
+  box.innerHTML = rows.join('');
+  $('#shelfCount').textContent = `${NODES.size} shelves`;
 
   box.querySelectorAll('.shelf').forEach(b => {
-    b.onclick = () => { SUPF.cat = b.dataset.c; drawLibrary(); };
+    b.onclick = e => {
+      const id = b.dataset.id;
+      const n = NODES.get(id);
+      // clicking the arrow only opens or closes; clicking the name also selects
+      if (n && n.kids.length){
+        if (LIB.open.has(id) && id === LIB.at) LIB.open.delete(id);
+        else LIB.open.add(id);
+      }
+      LIB.at = id;
+      LIB.more.clear(); LIB.allShelves = false;
+      drawLibrary();
+    };
   });
 }
 
-function libraryHits(){
-  const q = $('#libSearch').value;
-  if (SUPF.tab === 'ing')  return searchIng(q, 240, { group:SUPF.cat, cooked:false });
-  if (SUPF.tab === 'mine') return searchMine(q, 240, SUPF.cat);
-  return searchSup(q, 240, SUPF.cat);
+function drawCrumbs(){
+  const path = pathOf(LIB.at);
+  $('#libCrumbs').innerHTML = path.map((n, i) =>
+    i === path.length - 1 ? `<b>${esc(n.name)}</b>`
+      : `<a href="#" data-id="${esc(n.id)}">${esc(n.name)}</a>`).join(' › ');
+  $('#libCrumbs').querySelectorAll('a').forEach(a => {
+    a.onclick = e => { e.preventDefault(); LIB.at = a.dataset.id; LIB.open.add(a.dataset.id); drawLibrary(); };
+  });
 }
 
 function drawReco(){
   const box = $('#libReco');
-  const list = suggestions(SUPF.tab, 10);
-  if (!list.length || SUPF.cat || $('#libSearch').value.trim()){ box.hidden = true; return; }
+  const list = suggestions(10);
+  if (!list.length || $('#libSearch').value.trim()){ box.hidden = true; return; }
   box.hidden = false;
   box.innerHTML = `<div class="recolabel">${
     boughtCount(list[0].name) > 0 ? 'You buy these often' : 'Usually worth having in'}</div>
@@ -9970,7 +10505,7 @@ function libRow(it){
        data-ix="${it.ix === undefined ? '' : it.ix}" title="${esc(it.cat || '')}">
       <b>${esc(it.name)}${it.indian || (it.tags || []).includes('in')
         ? ' <span class="flag">IN</span>' : ''}</b>
-      <span class="cat">${esc(it.cat || '')}</span>
+      <span class="cat">${esc(it.cat || 'yours')}</span>
       <span class="acts">
         ${it.ix === undefined ? '' : `<button class="plus dish wide" type="button" title="Use it in a dish" aria-label="Use ${esc(it.name)} in a dish">dish</button>`}
         <button class="plus rep${rep ? ' on' : ''}" type="button" title="${rep ? esc(freqLabel(rep)) : 'Buy it again and again'}" aria-label="Repeat ${esc(it.name)}">&#8635;</button>
@@ -9979,46 +10514,87 @@ function libRow(it){
     </div>`;
 }
 
+function searchAll(q){
+  const terms = String(q).toLowerCase().split(/\s+/).filter(Boolean);
+  if (!terms.length) return null;
+  const hay = i => (i.name + ' ' + (i.cat || '')).toLowerCase();
+  const pool = [...myItems(), ...SUP, ...ING.filter(i => i.raw)];
+  const own = i => (i.catId ? 0 : 1);        // your own things come first
+  const lead = i => (i.name.toLowerCase().startsWith(terms[0]) ? 0 : 1);
+  return pool.filter(i => terms.every(t => hay(i).includes(t)))
+    .sort((a, b) => own(a) - own(b) || lead(a) - lead(b) ||
+      a.name.length - b.name.length || a.name.localeCompare(b.name))
+    .slice(0, 240);
+}
+
 function drawLibrary(){
-  const tab = SUPF.tab;
-  $$('#libTabs .tab').forEach(t => t.classList.toggle('on', t.dataset.t === tab));
-  $('#mineForm').hidden = tab !== 'mine';
-  $('#libSearch').placeholder = tab === 'ing' ? 'Search — “paneer”, “leaves”, “whole spices”'
-    : tab === 'mine' ? 'Search your own things'
-    : 'Search — “bin bags”, “AA battery”, “agarbatti”';
-  $('#libWhere').textContent = SUPF.cat || 'Everything';
-  $('#libHint').textContent = tab === 'ing'
-    ? 'Every ingredient, on 106 shelves. Add one to the cart, or straight into a dish.'
-    : tab === 'sup' ? 'Household supplies on 37 shelves. Add one to the cart.'
-    : 'The things you added yourself, on shelves you named.';
+  withMyShelves();
+  countCache.clear();
+  if (!NODES.has(LIB.at)) LIB.at = 'house';
+  for (const n of pathOf(LIB.at)) LIB.open.add(n.id);
 
   drawShelves();
+  drawCrumbs();
   drawReco();
 
-  const hits = libraryHits();
+  const q = $('#libSearch').value.trim();
+  const hits = q ? searchAll(q) : itemsAt(LIB.at);
+  const node = NODES.get(LIB.at);
+  $('#libWhere').textContent = q ? `“${q}”` : node.name;
   $('#libTally').textContent = hits.length
     ? `${hits.length}${hits.length >= 240 ? '+' : ''} item${hits.length === 1 ? '' : 's'}` : '';
+  $('#libHint').textContent = q
+    ? 'Searching every shelf.'
+    : 'Everything you can buy or cook with, sorted onto shelves. Add one to the cart, or straight into a dish.';
 
   const box = $('#libRows');
   if (!hits.length){
-    box.innerHTML = `<div class="shopempty" style="margin-top:12px">${tab === 'mine'
-      ? 'Nothing of your own yet — add it above.'
-      : 'Nothing matched. Try a shorter word, or add it under “Mine”.'}</div>`;
+    box.innerHTML = `<div class="shopempty" style="margin-top:12px">${q
+      ? 'Nothing matched. Try a shorter word.'
+      : LIB.at.startsWith('mine')
+        ? 'This fills itself as you go — what you buy more than once, what your dishes use, ' +
+          'and anything on a repeat. You can also put something here yourself with “+ Add something here”.'
+        : 'This shelf is empty — use “+ Add something here”.'}</div>`;
     return;
   }
 
-  // grouped by shelf, unless you are already standing at one
-  if (SUPF.cat){
-    box.innerHTML = `<div class="rows supgrid picker-list">${hits.map(libRow).join('')}</div>`;
+  // A branch lists everything under it, shelf by shelf — every leaf, not just
+  // the four directly below, or most of what you own never shows up.
+  const allShelves = q ? [] : leavesUnder(LIB.at);
+  const GROUPS = 40;
+  const shelves = LIB.allShelves ? allShelves : allShelves.slice(0, GROUPS);
+  if (allShelves.length > 1){
+    const PER = 24;
+    box.innerHTML = shelves.map(id => {
+      const kn = NODES.get(id);
+      const all = itemsAt(id);
+      const shown = LIB.more.has(id) ? all : all.slice(0, PER);
+      return `<div class="shelfhead" data-go="${esc(id)}">${esc(shelfPath(id))}<i>${all.length}</i></div>
+        <div class="rows supgrid picker-list">${shown.map(libRow).join('')}</div>
+        ${all.length > shown.length
+          ? `<button class="linkbtn" type="button" data-more="${esc(id)}">Show all ${all.length} ›</button>` : ''}`;
+    }).join('');
+    box.querySelectorAll('[data-go]').forEach(el => {
+      el.style.cursor = 'pointer';
+      el.onclick = () => { LIB.at = el.dataset.go; LIB.open.add(el.dataset.go);
+        LIB.more.clear(); LIB.allShelves = false; drawLibrary(); };
+    });
+    if (allShelves.length > shelves.length){
+      box.insertAdjacentHTML('beforeend',
+        `<button class="btn sm wide" type="button" id="moreShelves" style="margin-top:14px">Show the other ${
+          allShelves.length - shelves.length} shelves</button>`);
+      box.querySelector('#moreShelves').onclick = () => { LIB.allShelves = true; drawLibrary(); };
+    }
+    box.querySelectorAll('[data-more]').forEach(el => {
+      el.onclick = () => { LIB.more.add(el.dataset.more); drawLibrary(); };
+    });
   } else {
-    const by = new Map();
-    for (const it of hits){ const k = it.cat || 'Everything else';
-      if (!by.has(k)) by.set(k, []); by.get(k).push(it); }
-    box.innerHTML = [...by.entries()].map(([cat, list]) =>
-      `<div class="shelfhead">${esc(cat)}<i>${list.length}</i></div>
-       <div class="rows supgrid picker-list">${list.map(libRow).join('')}</div>`).join('');
+    box.innerHTML = `<div class="rows supgrid picker-list">${hits.map(libRow).join('')}</div>`;
   }
+  wireLibRows(box);
+}
 
+function wireLibRows(box){
   box.querySelectorAll('.pick').forEach(el => {
     const name = el.dataset.n;
     const ix = el.dataset.ix === '' ? null : +el.dataset.ix;
@@ -10027,13 +10603,9 @@ function drawLibrary(){
       e.dataTransfer.effectAllowed = 'copy';
     });
     const acts = [...el.querySelectorAll('.plus')];
-    const cart = acts[acts.length - 1];
-    cart.onclick = e => { e.stopPropagation(); addNamedToCart(name); };
+    acts[acts.length - 1].onclick = e => { e.stopPropagation(); addNamedToCart(name); };
     const rep = el.querySelector('.plus.rep');
-    if (rep) rep.onclick = e => {
-      e.stopPropagation();
-      go('shop'); openRepeats({ name, amount:amountFor(name) });
-    };
+    if (rep) rep.onclick = e => { e.stopPropagation(); go('shop'); openRepeats({ name, amount:amountFor(name) }); };
     const dish = el.querySelector('.plus.dish');
     if (dish) dish.onclick = e => {
       e.stopPropagation();
@@ -10044,41 +10616,101 @@ function drawLibrary(){
   });
 }
 
-$('#libTabs').addEventListener('click', e => {
-  const b = e.target.closest('.tab');
-  if (!b) return;
-  SUPF.tab = b.dataset.t; SUPF.cat = ''; $('#libSearch').value = '';
-  drawLibrary();
-});
+/* ── your own shelves and your own things ───────────────────────────── */
+function shelfOptions(selected){
+  const out = [];
+  const walk = id => {
+    const n = NODES.get(id); if (!n) return;
+    out.push(`<option value="${esc(id)}"${id === selected ? ' selected' : ''}>${
+      '  '.repeat(n.depth)}${esc(n.name)}</option>`);
+    for (const k of n.kids) walk(k);
+  };
+  for (const r of ROOT_IDS()) walk(r);
+  return out.join('');
+}
 
-$('#libToCart').onclick = () => go('shop');
-$('#libRepeats').onclick = () => { go('shop'); openRepeats(); };
-$('#supBtn').onclick = () => go('lib');
+$('#newShelfBtn').onclick = () => {
+  withMyShelves();
+  sheet('New shelf', `
+    <label class="f"><span>Name it</span>
+      <input id="nsName" placeholder="Sunday baking, Amma's shelf…" autocomplete="off"></label>
+    <label class="f"><span>Put it inside</span>
+      <select id="nsParent">${shelfOptions(LIB.at)}</select></label>
+    <p class="hint">It becomes a shelf like any other — you can put things on it, and more shelves inside it.</p>`,
+    [
+      { gap:true },
+      { label:'Cancel', go:shut },
+      { label:'Add the shelf', solid:true, go:() => {
+        const name = $('#nsName').value.trim();
+        if (!name) return toast('Give the shelf a name');
+        const parent = $('#nsParent').value;
+        const id = `${parent}/${slugId(name)}`;
+        if (NODES.has(id)) return toast('There is already a shelf by that name here');
+        myCats().push({ id, name, parent });
+        touch(); shut();
+        LIB.at = id; LIB.open.add(parent);
+        drawLibrary(); drawMyCatSelect();
+        toast(`“${name}” added under ${esc(NODES.get(parent).name)}`);
+      }}
+    ]);
+  setTimeout(() => $('#nsName')?.focus(), 40);
+};
 
-$('#myCat').addEventListener('change', e => {
-  const isNew = e.target.value === '__new';
-  $('#myNewCat').hidden = !isNew;
-  if (isNew) setTimeout(() => $('#myNewCat').focus(), 20);
-});
+function drawMyCatSelect(){
+  withMyShelves();
+  $('#myCat').innerHTML = shelfOptions(LIB.at);
+}
+
+$('#addHere').onclick = () => {
+  const f = $('#mineForm');
+  f.hidden = !f.hidden;
+  if (!f.hidden){ drawMyCatSelect(); setTimeout(() => $('#myName').focus(), 30); }
+};
+$('#myCancel').onclick = () => { $('#mineForm').hidden = true; };
 
 $('#mineForm').addEventListener('submit', e => {
   e.preventDefault();
   const name = $('#myName').value.trim();
   if (!name) return toast('Give it a name');
-  let cat = $('#myCat').value;
-  if (cat === '__new'){
-    cat = $('#myNewCat').value.trim();
-    if (!cat) return toast('Name the new category');
-    if (!myCats().includes(cat)) myCats().push(cat);
-  }
   if (myItems().some(i => cartKey(i.name) === cartKey(name)))
-    return toast(`${name} is already on your list`);
-  myItems().push({ id:uid(), name, cat, amount:$('#myAmt').value.trim() });
-  $('#myName').value = ''; $('#myAmt').value = ''; $('#myNewCat').value = '';
-  $('#myNewCat').hidden = true;
-  touch(); drawMyCatSelect(); drawLibrary(); drawPicker();
-  toast(`${name} added to ${cat}`);
+    return toast(`${name} is already on one of your shelves`);
+  const catId = $('#myCat').value;
+  myItems().push({ id:uid(), name, catId, cat:(NODES.get(catId) || {}).name || 'Mine',
+                   amount:$('#myAmt').value.trim() });
+  $('#myName').value = ''; $('#myAmt').value = '';
+  touch(); drawLibrary(); drawPicker();
+  toast(`${name} added to ${(NODES.get(catId) || {}).name || 'Mine'}`);
 });
+
+$('#libToCart').onclick = () => go('shop');
+$('#libRepeats').onclick = () => { go('shop'); openRepeats(); };
+/* The shelves belong on the shopping page too — that is where you are when
+   you want them. One library, moved into whichever page is asking for it. */
+function libraryHome(){ return $('#v-lib .liblayout') || $('#shopLibSlot .liblayout'); }
+
+function mountLibrary(where){
+  const layout = libraryHome();
+  if (!layout) return;
+  if (where === 'shop') $('#shopLibSlot').appendChild(layout);
+  else $('#v-lib').appendChild(layout);
+}
+
+function openShopLib(){
+  mountLibrary('shop');
+  $('#shopLib').hidden = false;
+  drawLibrary();
+  setTimeout(() => $('#libSearch').focus(), 30);
+}
+
+function closeShopLib(){
+  $('#shopLib').hidden = true;
+  mountLibrary('lib');
+}
+
+$('#supBtn').onclick = () => {
+  if ($('#shopLib').hidden) openShopLib(); else closeShopLib();
+};
+$('#shopLibClose').onclick = closeShopLib;
 
 function amountFor(name){
   const m = myItems().find(i => cartKey(i.name) === cartKey(name));
@@ -10095,6 +10727,7 @@ function addNamedToCart(name){
 }
 
 let supT;
+
 $('#libSearch').addEventListener('input', () => { clearTimeout(supT); supT = setTimeout(drawLibrary, 130); });
 
 const cartKey = name => String(name).trim().toLowerCase();
@@ -10638,7 +11271,7 @@ function enterBoard(){
   setSync(state.updatedAt ? 'ok' : '', state.updatedAt ? (lockKey ? 'Saved, locked' : 'Saved') : 'Nothing saved yet');
   $('#tDate').value = today();
   fillFilters();
-  fillSupCats();
+  withMyShelves();
   fillRepeatForm();
   runRepeats();
   resetFoodForm();

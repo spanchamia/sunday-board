@@ -40,10 +40,13 @@ Serve over **HTTP, not `file://`**. Browsers partition storage differently for
 | `names` | Task names staying legible on the calendar at every width |
 | `supplies` | Supply shelves and search, into the cart, ticking off, reload |
 | `repeats` | Frequencies landing on the day, catching up, not doubling up, stopping |
-| `categories` | The Library page: shelves, aisles, the three tabs, cart/dish/repeat, your own categories |
+| `categories` | The shelf tree, walking down to a leaf, your own shelves and sub-shelves, your own things |
 | `suggestions` | Cold-start staples, then what you actually buy, cook with and plan |
 | `meals` | Meal types on a dish, the rail's search and chips, the grid's row labels |
 | `users` | Two names keeping separate boards, the picker, switching, a locked board |
 | `migrate` | A board from the single-board version being adopted by its owner |
+| `taskrepeat` | All seven repeat kinds, rolling forward, skipping weekends, editing one |
+| `mine` | Mine filling itself from what you buy, cook with, repeat and type in |
+| `mineing` | The recipe builder's Mine tab: ranking, search, plus, drag, your own things |
 
 Screenshots land in `tests/screenshots/`.

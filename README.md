@@ -13,7 +13,14 @@ quantities, and tells you roughly what you're eating.
 **Calendar** — events with a time and notes. Task deadlines and planned meals show
 up alongside them. Click a day to see what's on it.
 
-**Tasks** — due date, time, notes, done. Anything with a due date lands on the calendar.
+**Tasks** — due date, time, notes, done. Anything with a due date lands on the
+calendar. A task can also repeat: every day, every weekday, every weekend, weekly on
+the day it is due, every 2 weeks, monthly on the same date, or a set of days you pick
+yourself (Tuesday and Friday, say). Tick a repeating task and it rolls to the next
+date rather than ending — its reminders re-arm, and it keeps a count of how many
+times you have done it. The calendar shows each future occurrence too.
+
+![Repeating tasks](docs/repeating-tasks.png)
 
 **Foods** — build a dish once from the ingredient library, and say which meals it
 suits: breakfast, lunch, dinner, snack, any combination. Leave them all off and it
@@ -33,11 +40,30 @@ BREAKFAST label on the grid itself, and the rail narrows to breakfast dishes.
 **Shopping** — the week's ingredients with quantities added up. Drag what you're
 buying into the cart and tick things off as you go.
 
-**Library** — a page of shelves, not a search box hidden behind a button. Three
-tabs: all 1,896 **Ingredients** on 106 shelves grouped under the 17 aisles they
-belong to, 5,053 **Supplies** on 37 shelves, and **Mine** — anything you add
-yourself, on shelves you name. Every row goes to the cart, straight into a dish,
-or onto a repeat.
+**Library** — 170 shelves, nested the way a house actually is:
+
+```
+House supplies › Kitchen supplies › Ingredients › Vegetables › Leaves & greens
+```
+
+Five roots — House supplies, Home & garden, Work & study, People & occasions, and
+Mine. Pick a branch and it lists **every** shelf beneath it, supplies first and
+ingredients after, 24 to a shelf with *Show all* per shelf; pick a shelf and you get
+the lot in one go.
+
+**Mine** fills itself: *Things you buy often* (anything that has gone into the cart
+more than once, most often first), *In your dishes* (what your own recipes lean on),
+*On repeat*, and *Added by you*. Shelves you make yourself sit alongside them.
+
+The same shelf is offered where it is most useful — the recipe builder's ingredient
+library has an **Everything / Mine** pair of tabs. Mine there ranks an ingredient by
+how many of your dishes use it plus how often you have bought it, and the rows drag
+onto the recipe exactly like the library's.
+
+![Mine, in the recipe builder](docs/mine-ingredients.png) **+ New shelf** puts one of your own anywhere in the tree, including
+inside another of your own, and **+ Add something here** files your own ingredient
+onto whichever shelf you are standing on. Every row goes to the cart, straight into a
+dish, or onto a repeat.
 
 **Repeats** — give something a frequency and it arrives on its own. Cilantro every
 Monday, milk every day, toilet roll on the 15th. The board can't run while it's
@@ -52,7 +78,7 @@ any, it falls back to the things most kitchens run out of.
 
 ![The supply library](docs/supplies.png)
 
-![The library](docs/library-page.png)
+![The shelves](docs/shelves.png)
 
 ![Things that come round again](docs/repeats.png)
 
@@ -164,6 +190,18 @@ sundayboard.board.priya      another, untouched by the first
 ```
 
 ![Whose board?](docs/boards.png)
+
+## The shelf tree
+
+`SHELF_TREE` in the page describes the built-in branches; the 106 ingredient
+categories hang under *House supplies › Kitchen supplies › Ingredients* grouped by
+the 17 aisles the data ships with, and the 37 supply categories hang under the branch
+each belongs to. Every node knows how to list its own things, and a branch lists
+everything underneath it, so the counts add up as you climb.
+
+Shelves you add yourself live in `state.myCats` as `{id, name, parent}` — the parent
+is any node id, built-in or your own, which is what lets a shelf sit inside a shelf.
+Your own things carry the id of the shelf they sit on.
 
 ## Categories
 

@@ -63,8 +63,7 @@ const { chromium } = require('playwright');
   console.log('placed:', (await p.$$eval('.served', s=>s.map(x=>x.textContent.replace(/\s+/g,' ').trim()))).slice(0,3));
 
   // shopping recommendations reflect what has been bought
-  await p.click('#nav button[data-v=lib]'); await p.waitForTimeout(500);
-  await p.click('#libTabs .tab[data-t=sup]'); await p.waitForTimeout(500);
+  await p.click('#nav button[data-v=lib]'); await p.waitForTimeout(700);
   console.log('\nsupply reco label:', await p.textContent('#libReco .recolabel'));
   await p.click('#libReco .chiprow button'); await p.waitForTimeout(400);
   await p.click('#libReco .chiprow button'); await p.waitForTimeout(400);
@@ -74,8 +73,7 @@ const { chromium } = require('playwright');
   await p.click('#nav button[data-v=shop]'); await p.waitForTimeout(400);
   await p.click('#cartList .gitem .gbtn'); await p.waitForTimeout(300);
   await p.click('#cartList .gitem .gbtn'); await p.waitForTimeout(400);
-  await p.click('#nav button[data-v=lib]'); await p.waitForTimeout(400);
-  await p.click('#libTabs .tab[data-t=sup]'); await p.waitForTimeout(500);
+  await p.click('#nav button[data-v=lib]'); await p.waitForTimeout(700);
   console.log('after buying and clearing them — reco label:', await p.textContent('#libReco .recolabel'));
   console.log('reco now:', (await p.$$eval('#libReco .chiprow button', b=>b.slice(0,4).map(x=>x.textContent))).join(' · '));
 
