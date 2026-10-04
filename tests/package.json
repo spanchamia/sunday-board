@@ -22,7 +22,9 @@
     "migrate": "node migtest.js",
     "taskrepeat": "node taskreptest.js",
     "mine": "node minetest.js",
-    "mineing": "node mineingtest.js"
+    "mineing": "node mineingtest.js",
+    "keep": "node keeptest.js",
+    "theme": "node themetest.js"
   },
   "devDependencies": { "playwright": "^1.56.0" }
 }

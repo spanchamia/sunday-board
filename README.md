@@ -40,7 +40,7 @@ BREAKFAST label on the grid itself, and the rail narrows to breakfast dishes.
 **Shopping** — the week's ingredients with quantities added up. Drag what you're
 buying into the cart and tick things off as you go.
 
-**Library** — 170 shelves, nested the way a house actually is:
+**Library** — 175 shelves, nested the way a house actually is:
 
 ```
 House supplies › Kitchen supplies › Ingredients › Vegetables › Leaves & greens
@@ -51,9 +51,16 @@ Mine. Pick a branch and it lists **every** shelf beneath it, supplies first and
 ingredients after, 24 to a shelf with *Show all* per shelf; pick a shelf and you get
 the lot in one go.
 
-**Mine** fills itself: *Things you buy often* (anything that has gone into the cart
-more than once, most often first), *In your dishes* (what your own recipes lean on),
-*On repeat*, and *Added by you*. Shelves you make yourself sit alongside them.
+**Mine** fills itself: *Kept by you* (anything you starred), *Things you buy often*
+(anything that has gone into the cart more than once, most often first), *In your
+dishes* (what your own recipes lean on), *On repeat*, and *Added by you*. Shelves you
+make yourself sit alongside them.
+
+Two things put something there without you filing it. The **☆** on any library row
+keeps that thing in Mine for good — press it again to let it go. And the first time
+you cart something, the shelf it came from follows it: cart a bin bag and *Cleaning*
+appears under Mine with all 394 of its things, so the next trip starts where the last
+one left off. Hover a followed shelf and **×** drops it again.
 
 The same shelf is offered where it is most useful — the recipe builder's ingredient
 library has an **Everything / Mine** pair of tabs. Mine there ranks an ingredient by
@@ -81,6 +88,13 @@ any, it falls back to the things most kitchens run out of.
 ![The shelves](docs/shelves.png)
 
 ![Things that come round again](docs/repeats.png)
+
+**Light and dark** — Auto, Light or Dark at the bottom of the rail. Auto follows
+whatever the computer or phone is set to; the other two override it. The choice is
+kept per device, not per board, and it is applied before the page paints, so the
+sign-in screen comes up in the right colours too.
+
+![Dark](docs/dark.png)
 
 **Reminders** — one day before and thirty minutes before every event, task and meal,
 plus a Sunday summary of the week's menu and shopping. They appear in the page and,
@@ -138,7 +152,10 @@ data in the middle of it — then:
 python3 src/build.py
 ```
 
-That injects the table and writes a standalone `index.html`.
+That injects the table and writes a standalone `index.html`, and stamps the build —
+the date and a short hash of the page, printed at the bottom of the rail and echoed
+by the build command. If the app in front of you doesn't show a stamp, you are
+looking at the template rather than a built page.
 
 ## Tests
 

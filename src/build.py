@@ -42,7 +42,11 @@ def main() -> int:
     rows, table = rows_of(DATA, "ingredient")
     sup_rows, sup_table = rows_of(SUPPLIES, "supply")
 
-    body = page.replace(PLACEHOLDER, table).replace(SUP_PLACEHOLDER, sup_table)
+    import datetime, hashlib
+    stamp = datetime.date.today().strftime("%d %b") + " " + hashlib.sha1(page.encode()).hexdigest()[:6]
+    body = (page.replace(PLACEHOLDER, table)
+                .replace(SUP_PLACEHOLDER, sup_table)
+                .replace("__BUILD_STAMP__", stamp))
 
     # The artifact host wraps the page in its own skeleton, so the source has no
     # <head>. A file served from a repo or GitHub Pages needs one — without the
@@ -61,7 +65,7 @@ def main() -> int:
     )
     OUT.write_text(doc, encoding="utf-8")
     print(f"built {OUT.relative_to(ROOT)} — {OUT.stat().st_size // 1024} KB, "
-          f"{len(rows)} base ingredients, {len(sup_rows)} supplies")
+          f"{len(rows)} base ingredients, {len(sup_rows)} supplies, build {stamp}")
     return 0
 
 

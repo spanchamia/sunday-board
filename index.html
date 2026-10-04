@@ -122,6 +122,15 @@ p{margin:0}
 .syncdot{width:6px;height:6px;border-radius:50%;background:var(--ink-3);flex:0 0 auto}
 .syncdot.ok{background:var(--food)}
 .syncdot.busy{background:var(--duty)}
+.themeseg{display:flex;border:1px solid var(--rule);border-radius:8px;overflow:hidden}
+.themeseg button{flex:1;border:0;background:none;font:inherit;font-size:11.5px;font-weight:600;
+  color:var(--ink-3);padding:5px 4px;cursor:pointer;transition:background .12s,color .12s}
+.themeseg button:hover{background:var(--sunk);color:var(--ink)}
+.themeseg button.on{background:var(--time);color:var(--paper)}
+@media (max-width:880px){.themeseg{flex:0 0 auto;order:1}.themeseg button{padding:5px 8px}}
+.buildstamp{font-size:10px;color:var(--ink-3);opacity:.65;letter-spacing:.04em;
+  font-family:"JetBrains Mono",monospace;margin-top:2px}
+@media (max-width:880px){.buildstamp{display:none}}
 
 main{padding:26px 30px 70px;max-width:1180px}
 .pagehead{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:18px}
@@ -373,7 +382,13 @@ textarea{resize:vertical}
 .pick .acts{display:flex;gap:4px;position:absolute;right:6px;top:6px}
 .pick .acts .plus{position:static}
 .pick .acts .plus.wide{width:auto;padding:0 6px;font-size:10.5px;font-weight:700;letter-spacing:.03em}
-.pick.sup{padding-right:104px}
+.pick .plus.keep{font-size:13px;line-height:1}
+.shelflist .shelf .drop{flex:0 0 auto;color:var(--ink-3);font-size:13px;line-height:1;opacity:0;
+  padding:0 3px;border-radius:4px}
+.shelflist .shelf:hover .drop{opacity:.7}
+.shelflist .shelf .drop:hover{opacity:1;color:var(--warn)}
+.pick .plus.keep.on{border-color:var(--time);color:var(--time);
+  background:color-mix(in srgb,var(--time) 14%,transparent)}
 .pick .plus.rep.on{border-color:var(--time);color:var(--time)}
 #shopLibSlot .shelflist{max-height:44vh}
 #shopLibSlot #libRows{max-height:46vh}
@@ -464,7 +479,8 @@ button.sl.picked b,button.sl.picked em{color:inherit}
 .headright{display:flex;align-items:center;gap:10px}
 .picker-list.supgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(238px,1fr));
   gap:5px;max-height:34vh;align-content:start}
-.pick.sup{display:block;position:relative;padding:7px 32px 7px 9px}
+.pick.sup{display:block;position:relative;padding:7px 9px 6px}
+.pick.sup .acts{position:static;justify-content:flex-end;margin-top:6px;flex-wrap:wrap}
 .pick.sup b{display:block;white-space:normal;overflow:visible;font-size:12.8px;line-height:1.3}
 .pick.sup .cat{display:block;margin-top:2px;font-size:9.5px;font-weight:700;letter-spacing:.05em;
   text-transform:uppercase;color:var(--ink-3)}
@@ -488,6 +504,12 @@ button.sl.picked b,button.sl.picked em{color:inherit}
 .pick .plus{flex:0 0 auto;border:1px solid var(--rule);background:var(--card);color:var(--ink-2);
   border-radius:6px;width:22px;height:22px;font-size:14px;line-height:1;cursor:pointer;padding:0}
 .pick .plus:hover{border-color:var(--time);color:var(--time)}
+.pick{cursor:pointer}
+.pick .info{flex:0 0 auto;border:1px solid var(--rule);background:var(--card);color:var(--ink-3);
+  border-radius:50%;width:19px;height:19px;font-size:11px;font-weight:700;font-style:italic;
+  line-height:1;cursor:pointer;padding:0;font-family:Georgia,serif}
+.pick .info:hover{border-color:var(--time);color:var(--time)}
+.pick.justadded{border-color:var(--time);background:color-mix(in srgb,var(--time) 18%,transparent)}
 .pick.cooked b{font-weight:500;color:var(--ink-2)}
 .pick.mineown{border-color:color-mix(in srgb,var(--time) 40%,var(--rule))}
 .pick.mineown .prep{color:var(--time)}
@@ -521,6 +543,14 @@ button.sl.picked b,button.sl.picked em{color:inherit}
   color:var(--ink-3);font-size:12.5px}
 #ingBox:empty::before{content:"Drop ingredients here"}
 #ingBox.over{background:color-mix(in srgb,var(--time) 10%,transparent);box-shadow:0 0 0 2px var(--time) inset}
+/* the whole recipe card takes the drop, and says so */
+#foodForm.armed{border-color:var(--time)}
+#foodForm.armed #ingBox:empty{border-color:var(--time);color:var(--time);
+  background:color-mix(in srgb,var(--time) 7%,transparent)}
+#foodForm.armed #ingBox:empty::before{content:"Drop it anywhere on this card"}
+#foodForm.over{box-shadow:0 0 0 2px var(--time), var(--shadow)}
+#foodForm.over #ingBox:empty{background:color-mix(in srgb,var(--time) 13%,transparent)}
+#ingBox:empty{transition:background .12s,border-color .12s,color .12s}
 .ingitem{margin-bottom:8px}
 .ingnote{font-size:11px;color:var(--ink-3);margin:3px 0 0 2px;font-family:"JetBrains Mono",monospace;cursor:pointer}
 .ingnote:hover{color:var(--time)}
@@ -725,6 +755,12 @@ button.sl.picked b,button.sl.picked em{color:inherit}
         <span class="syncline"><i class="syncdot" id="syncDot"></i><span id="syncText">Loading…</span></span>
         <button class="linkbtn" id="lockBtn">Add a passcode</button>
       </div>
+      <div class="themeseg" id="themeSeg" role="group" aria-label="Theme">
+        <button type="button" data-t="" title="Follow the system">Auto</button>
+        <button type="button" data-t="light" title="Always light">Light</button>
+        <button type="button" data-t="dark" title="Always dark">Dark</button>
+      </div>
+      <p class="buildstamp" id="buildStamp">—</p>
     </div>
   </aside>
 
@@ -809,7 +845,7 @@ button.sl.picked b,button.sl.picked em{color:inherit}
           <p class="hint" style="margin:6px 0 15px">Leave them all off and it fits any meal.</p>
           <label class="f" style="margin-bottom:7px"><span>Ingredients</span></label>
           <div id="ingBox"></div>
-          <p class="hint">Drag ingredients in from the library, or add your own.</p>
+          <p class="hint">Click ingredients in the library to add them &mdash; or drag them across.</p>
           <button class="btn sm" type="button" id="ingAdd">+ Add my own</button>
           <div class="nutstrip" id="foodNut"></div>
           <button class="btn solid wide" type="submit" id="fSave" style="margin-top:14px">Save food</button>
@@ -832,7 +868,8 @@ button.sl.picked b,button.sl.picked em{color:inherit}
           <label class="libtoggle"><input type="checkbox" id="fCooked" checked>
             <span>Include cooked forms</span></label>
           <div class="picker-list" id="ingResults"></div>
-          <p class="hint">Click one for its full nutrition. Drag it onto the recipe, or press <b>+</b> to add.</p>
+          <p class="hint"><b>Click an ingredient to add it.</b> You can drag it across instead,
+            and <i>i</i> shows its nutrition.</p>
         </aside>
       </div>
 
@@ -1001,6 +1038,9 @@ const SLOTS = [
   { key:'snack',     label:'Snack',     time:'15:30' }
 ];
 const SLOT_MARK = { breakfast:'B', lunch:'L', dinner:'D', snack:'S' };
+
+/* stamped by build.py — tells you at a glance which copy you are running */
+const BUILD = '26 Sep 070a7c';
 const slotOf = k => SLOTS.find(s => s.key === k) || SLOTS[1];
 
 /* ── tiny helpers ───────────────────────────────────────────────────── */
@@ -1035,6 +1075,30 @@ function toast(msg){
    are the same person and come back to the same board every time. Signing
    in under a new name makes a new board beside the others; it never writes
    over anyone else's.                                                     */
+/* ── light or dark ──────────────────────────────────────────────────────
+   A device preference, not a board one: the same board on a phone and a
+   laptop can reasonably want different looks. Empty means follow the
+   system, which is what the CSS does on its own.                        */
+const THEME_KEY = 'sundayboard.theme';
+
+function readTheme(){
+  try { const t = localStorage.getItem(THEME_KEY); return t === 'light' || t === 'dark' ? t : ''; }
+  catch { return ''; }
+}
+
+function applyTheme(t){
+  if (t) document.documentElement.dataset.theme = t;
+  else delete document.documentElement.dataset.theme;
+  $$('#themeSeg button').forEach(b => b.classList.toggle('on', b.dataset.t === t));
+}
+
+function setTheme(t){
+  try { t ? localStorage.setItem(THEME_KEY, t) : localStorage.removeItem(THEME_KEY); } catch {}
+  applyTheme(t);
+}
+
+applyTheme(readTheme());
+
 const LEGACY_KEY = 'sundayboard.v1';
 const USERS_KEY  = 'sundayboard.users';
 const boardKey = slug => `sundayboard.board.${slug}`;
@@ -1081,7 +1145,7 @@ function adoptLegacy(){
   }
   try { localStorage.removeItem(LEGACY_KEY); } catch {}
 }
-let state = { v:1, updatedAt:0, profile:{name:'',email:''}, targets:{}, cart:[], repeats:[], myItems:[], myCats:[], bought:{}, events:[], tasks:[], foods:[], meals:[], alerts:[], fired:{}, desktop:false };
+let state = { v:1, updatedAt:0, profile:{name:'',email:''}, targets:{}, cart:[], repeats:[], myItems:[], myCats:[], kept:[], myShelves:[], bought:{}, events:[], tasks:[], foods:[], meals:[], alerts:[], fired:{}, desktop:false };
 let ns = null, nsAsked = false, saveT = null;
 
 function normalise(raw){
@@ -1105,6 +1169,8 @@ function normalise(raw){
       ...i,
       catId: i.catId || (i.cat ? `mine/${String(i.cat).toLowerCase().replace(/[^a-z0-9]+/g,'-')}` : 'mine')
     })),
+    kept: Array.isArray(s.kept) ? s.kept.filter(n => typeof n === 'string') : [],
+    myShelves: Array.isArray(s.myShelves) ? s.myShelves.filter(n => typeof n === 'string') : [],
     myCats: (Array.isArray(s.myCats) ? s.myCats : [])
       .map(c => typeof c === 'string'
         ? { id:`mine/${String(c).toLowerCase().replace(/[^a-z0-9]+/g,'-')}`, name:c, parent:'mine' }
@@ -4296,6 +4362,7 @@ function myIngredients(){
     const k = cartKey(name);
     score.set(k, (score.get(k) || 0) + by);
   };
+  for (const n of kept()) bump(n, 1000);          // you asked for these by hand
   for (const f of state.foods) for (const g of (f.ingredients || [])) bump(g.name, 3);
   for (const k of Object.keys(state.bought || {})) score.set(k, (score.get(k) || 0) + state.bought[k]);
 
@@ -4328,7 +4395,7 @@ function drawMineTab(){
   if (!list.length){
     box.innerHTML = `<div class="none">${terms.length
       ? 'Nothing of yours matched.'
-      : 'Nothing yet — save a dish or two and the things you cook with land here.'}</div>`;
+      : 'Nothing yet — keep something with ☆ in the library, or save a dish.'}</div>`;
     return;
   }
   box.innerHTML = list.map(i => i.ix === undefined
@@ -4340,29 +4407,43 @@ function drawMineTab(){
          <b>${esc(i.name)}</b>
          ${i.indian ? '<span class="flag">IN</span>' : ''}
          <em>${Math.round(i.n.kcal)} kcal</em>
+         <button class="info" type="button" aria-label="Nutrition for ${esc(i.name)}" title="Nutrition">i</button>
          <button class="plus" type="button" aria-label="Add ${esc(i.name)} to the recipe">+</button>
        </div>`).join('');
   wirePickRows(box);
 }
 
-/* drag and click behaviour, shared by both tabs */
+/* ── clicking an ingredient adds it ─────────────────────────────────────
+   Dragging is the nice way and it still works, but a trackpad, a touch
+   screen or a stiff finger all make HTML5 drag miserable. Clicking the row
+   is the reliable way, so that is what a click does. Nutrition moved to
+   its own ⓘ — it used to steal the click and made the whole picker feel
+   like it was ignoring you.                                              */
 function wirePickRows(box){
   box.querySelectorAll('.pick').forEach(el => {
     const own = el.classList.contains('mineown');
-    const name = el.dataset.my;
+    const name = el.dataset.my || (el.querySelector('b') || {}).textContent || '';
     const ix = own ? null : +el.dataset.ix;
+
     el.addEventListener('dragstart', e => {
       e.dataTransfer.setData('text/plain', JSON.stringify(
         own ? { t:'mying', name } : { t:'ing', ix }));
       e.dataTransfer.effectAllowed = 'copy';
     });
+
     const add = e => {
-      e.stopPropagation();
+      if (e) e.stopPropagation();
       if (own){ $('#ingBox').appendChild(ingLine({ name, qty:1, unit:'' })); refreshFoodNut(); }
       else addFromLibrary(ix);
+      el.classList.add('justadded');
+      setTimeout(() => el.classList.remove('justadded'), 700);
+      toast(`${(own ? name : ING[ix].name)} added`);
     };
+
     el.querySelector('.plus').onclick = add;
-    el.onclick = own ? add : () => factSheet(ix);
+    const info = el.querySelector('.info');
+    if (info) info.onclick = e => { e.stopPropagation(); factSheet(ix); };
+    el.onclick = add;
   });
 }
 
@@ -4402,6 +4483,7 @@ function drawPicker(){
       ${i.raw && i.indian ? '<span class="flag">IN</span>' : ''}
       ${i.raw ? '' : `<span class="prep">${esc(i.prep)}</span>`}
       <em>${Math.round(i.n.kcal)} kcal</em>
+      <button class="info" type="button" aria-label="Nutrition for ${esc(i.name)}" title="Nutrition">i</button>
       <button class="plus" type="button" aria-label="Add ${esc(i.name)} to the recipe">+</button>
     </div>`).join('');
 
@@ -4464,17 +4546,65 @@ $('#fGroup').addEventListener('change', e => { FILTER.group = e.target.value; dr
 $('#fCooked').addEventListener('change', e => { FILTER.cooked = e.target.checked; drawPicker(); });
 
 /* drop an ingredient straight into the recipe */
+/* ── dropping an ingredient into the recipe ─────────────────────────────
+   The ingredient box alone is a small target across a wide page, and
+   dragleave fires for every child you cross, so the highlight used to
+   flicker off. The whole recipe card takes the drop, a depth counter keeps
+   the highlight steady, and the card lights up the moment a drag starts so
+   you can see where it is meant to go.                                    */
 const dropZone = $('#ingBox');
-dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('over'); });
-dropZone.addEventListener('dragleave', () => dropZone.classList.remove('over'));
-dropZone.addEventListener('drop', e => {
-  e.preventDefault(); dropZone.classList.remove('over');
+const dropCard = $('#foodForm');
+let dragDepth = 0;
+
+function acceptsIngredient(e){
+  const types = e.dataTransfer && e.dataTransfer.types;
+  return !types || [].includes.call(types, 'text/plain');
+}
+
+function dropIngredient(e){
+  e.preventDefault();
+  e.stopPropagation();          // the box sits inside the card — only take it once
+  dragDepth = 0;
+  dropCard.classList.remove('over');
+  dropZone.classList.remove('over');
   let d; try { d = JSON.parse(e.dataTransfer.getData('text/plain')); } catch { return; }
   if (d && d.t === 'ing') addFromLibrary(d.ix);
   else if (d && d.t === 'mying'){
-    $('#ingBox').appendChild(ingLine({ name:d.name, qty:1, unit:'' }));
+    dropZone.appendChild(ingLine({ name:d.name, qty:1, unit:'' }));
     refreshFoodNut();
   }
+}
+
+for (const zone of [dropCard, dropZone]){
+  zone.addEventListener('dragenter', e => {
+    if (!acceptsIngredient(e)) return;
+    e.preventDefault();
+    dragDepth++;
+    dropCard.classList.add('over');
+  });
+  zone.addEventListener('dragover', e => {
+    if (!acceptsIngredient(e)) return;
+    e.preventDefault();                       // without this the drop never fires
+    e.dataTransfer.dropEffect = 'copy';
+    dropCard.classList.add('over');
+    if (zone === dropZone) dropZone.classList.add('over');
+  });
+  zone.addEventListener('dragleave', () => {
+    dragDepth = Math.max(0, dragDepth - 1);
+    if (!dragDepth){ dropCard.classList.remove('over'); dropZone.classList.remove('over'); }
+  });
+  zone.addEventListener('drop', dropIngredient);
+}
+
+/* while any ingredient is being dragged, show where it can land */
+document.addEventListener('dragstart', e => {
+  const pick = e.target.closest && e.target.closest('.pick');
+  if (pick && !$('#foodCompose').hidden) dropCard.classList.add('armed');
+});
+document.addEventListener('dragend', () => {
+  dragDepth = 0;
+  dropCard.classList.remove('armed', 'over');
+  dropZone.classList.remove('over');
 });
 
 /* which meals a dish suits — an empty list means "any of them" */
@@ -10259,6 +10389,7 @@ function buildNodes(){
   // what is on a repeat, and the things you typed in yourself.
   nodes.set('mine', { id:'mine', name:'Mine', parent:null, depth:0, kids:[], sup:null, ing:null, mine:true });
   for (const [id, name, auto] of [
+    ['mine/kept',   'Kept by you',          'kept'],
     ['mine/often',  'Things you buy often', 'often'],
     ['mine/dishes', 'In your dishes',       'dishes'],
     ['mine/repeat', 'On repeat',            'repeat'],
@@ -10275,6 +10406,17 @@ let NODES = buildNodes();
 /* the shelves you added yourself, hung wherever you put them */
 function withMyShelves(){
   NODES = buildNodes();
+
+  // a second doorway to each shelf you have shopped from
+  for (const target of myShelves()){
+    const t = NODES.get(target);
+    if (!t) continue;
+    const id = `mine/from/${target.replace(/\//g, '-')}`;
+    NODES.set(id, { id, name:t.name, parent:'mine', depth:1, kids:[],
+                    sup:null, ing:null, mine:true, alias:target });
+    NODES.get('mine').kids.push(id);
+  }
+
   for (const c of myCats()){
     if (NODES.has(c.id)) continue;
     const parent = NODES.has(c.parent) ? c.parent : 'mine';
@@ -10313,6 +10455,7 @@ function leavesUnder(id){
 function ownItems(id){
   const n = NODES.get(id);
   if (!n) return [];
+  if (n.alias) return itemsAt(n.alias);
   if (n.sup) return SUP.filter(i => i.cat === n.sup);
   if (n.ing) return ING.filter(i => i.raw && i.cat === n.ing);
   if (n.auto) return autoShelf(n.auto);
@@ -10335,6 +10478,12 @@ function autoShelf(kind){
     if (seen.has(k)) return;
     seen.add(k); out.push(it);
   };
+
+  if (kind === 'kept'){
+    // newest first — the one you just kept belongs at the top
+    for (const name of [...(state.kept || [])].reverse()) push(lookup(name));
+    return out;
+  }
 
   if (kind === 'often'){
     const counts = state.bought || {};
@@ -10409,6 +10558,49 @@ const STAPLES_ING = ['Onion','Tomato','Garlic','Ginger (fresh)','Potato','Green 
   'Egg (whole, raw)','Toor dal (arhar, split)','Basmati rice (raw)','Atta (whole wheat flour)',
   'Mustard oil','Ghee','Table salt','Cumin seed (jeera)','Turmeric powder (haldi)'];
 
+/* ── the shelves you actually shop from ─────────────────────────────────
+   Put something in the cart and the shelf it came from joins Mine, so the
+   aisles you use collect themselves into one place. They are aliases: the
+   same shelf, shown a second time where you can reach it quickly.        */
+const myShelves = () => state.myShelves || (state.myShelves = []);
+
+function shelfOfItem(name){
+  const it = lookup(name);
+  if (!it) return null;
+  if (it.catId) return NODES.has(it.catId) ? it.catId : 'mine';
+  for (const n of NODES.values()){
+    if (n.sup && it.cat === n.sup) return n.id;
+    if (n.ing && it.cat === n.ing) return n.id;
+  }
+  return null;
+}
+
+function noteShelfUsed(name){
+  const id = shelfOfItem(name);
+  if (!id || id === 'mine' || id.startsWith('mine/')) return;
+  if (myShelves().includes(id)) return;
+  myShelves().push(id);
+  const n = NODES.get(id);
+  if (n) toast(`${n.name} added to Mine`);
+}
+
+const kept = () => state.kept || (state.kept = []);
+const isKept = name => kept().some(n => cartKey(n) === cartKey(name));
+
+/** The star on a library row: keep this on the Mine shelf, or let it go. */
+function toggleKeep(name){
+  const k = cartKey(name);
+  if (isKept(name)){
+    state.kept = kept().filter(n => cartKey(n) !== k);
+    toast(`${name} taken off Mine`);
+  } else {
+    kept().push(name);
+    toast(`${name} kept in Mine`);
+  }
+  touch();
+  if (view === 'lib') drawLibrary();
+}
+
 const boughtCount = name => (state.bought || {})[cartKey(name)] || 0;
 
 function noteBought(name){
@@ -10444,6 +10636,16 @@ function suggestions(n = 10){
 /* ── drawing it ─────────────────────────────────────────────────────── */
 const LIB = { at:'house', open:new Set(['mine','house','house/kitchen']), q:'', more:new Set(), allShelves:false };
 
+/* an alias can be dropped from Mine without touching the real shelf */
+function forgetShelf(id){
+  const n = NODES.get(id);
+  if (!n || !n.alias) return;
+  state.myShelves = myShelves().filter(x => x !== n.alias);
+  touch();
+  if (LIB.at === id) LIB.at = 'mine';
+  drawLibrary();
+}
+
 function drawShelves(){
   const box = $('#shelfList');
   const rows = [];
@@ -10453,15 +10655,21 @@ function drawShelves(){
     const leaf = !n.kids.length;
     rows.push(`<button type="button" class="shelf d${Math.min(4, n.depth)}${leaf ? ' leaf' : ''}${
       open ? ' open' : ''}${n.mine ? ' mine' : ''}${id === LIB.at ? ' on' : ''}" data-id="${esc(id)}">
-      <span class="twist">▶</span><span class="lbl">${esc(n.name)}</span><i>${countAt(id)}</i></button>`);
+      <span class="twist">▶</span><span class="lbl">${esc(n.name)}</span>${
+        n.alias ? `<span class="drop" data-drop="${esc(id)}" title="Take this shelf off Mine">×</span>` : ''
+      }<i>${countAt(id)}</i></button>`);
     if (open) for (const k of n.kids) walk(k);
   };
   for (const r of ROOT_IDS()) walk(r);
   box.innerHTML = rows.join('');
   $('#shelfCount').textContent = `${NODES.size} shelves`;
 
+  box.querySelectorAll('.drop').forEach(x => {
+    x.onclick = e => { e.stopPropagation(); forgetShelf(x.dataset.drop); };
+  });
   box.querySelectorAll('.shelf').forEach(b => {
     b.onclick = e => {
+      if (e.target.classList.contains('drop')) return;
       const id = b.dataset.id;
       const n = NODES.get(id);
       // clicking the arrow only opens or closes; clicking the name also selects
@@ -10507,6 +10715,11 @@ function libRow(it){
         ? ' <span class="flag">IN</span>' : ''}</b>
       <span class="cat">${esc(it.cat || 'yours')}</span>
       <span class="acts">
+        <button class="plus keep${isKept(it.name) ? ' on' : ''}" type="button"
+          title="${isKept(it.name) ? 'On your Mine shelf' : 'Keep this in Mine'}"
+          aria-pressed="${isKept(it.name)}"
+          aria-label="${isKept(it.name) ? 'Take ' + esc(it.name) + ' off Mine' : 'Keep ' + esc(it.name) + ' in Mine'}">${
+            isKept(it.name) ? '★' : '☆'}</button>
         ${it.ix === undefined ? '' : `<button class="plus dish wide" type="button" title="Use it in a dish" aria-label="Use ${esc(it.name)} in a dish">dish</button>`}
         <button class="plus rep${rep ? ' on' : ''}" type="button" title="${rep ? esc(freqLabel(rep)) : 'Buy it again and again'}" aria-label="Repeat ${esc(it.name)}">&#8635;</button>
         <button class="plus" type="button" aria-label="${got ? 'Already in the cart' : 'Add ' + esc(it.name) + ' to the cart'}">${got ? '✓' : '+'}</button>
@@ -10553,7 +10766,8 @@ function drawLibrary(){
       ? 'Nothing matched. Try a shorter word.'
       : LIB.at.startsWith('mine')
         ? 'This fills itself as you go — what you buy more than once, what your dishes use, ' +
-          'and anything on a repeat. You can also put something here yourself with “+ Add something here”.'
+          'and anything on a repeat. Press ☆ on any library row to keep it here, or use ' +
+          '“+ Add something here”.'
         : 'This shelf is empty — use “+ Add something here”.'}</div>`;
     return;
   }
@@ -10604,6 +10818,8 @@ function wireLibRows(box){
     });
     const acts = [...el.querySelectorAll('.plus')];
     acts[acts.length - 1].onclick = e => { e.stopPropagation(); addNamedToCart(name); };
+    const keep = el.querySelector('.plus.keep');
+    if (keep) keep.onclick = e => { e.stopPropagation(); toggleKeep(name); };
     const rep = el.querySelector('.plus.rep');
     if (rep) rep.onclick = e => { e.stopPropagation(); go('shop'); openRepeats({ name, amount:amountFor(name) }); };
     const dish = el.querySelector('.plus.dish');
@@ -10721,6 +10937,7 @@ function addNamedToCart(name){
   const key = cartKey(name);
   if (inCart(key)) return toast(`${name} is already in the cart`);
   noteBought(name);
+  noteShelfUsed(name);
   addToCart(key, name, amountFor(name), true);
   if (view === 'lib') drawLibrary();
   toast(`${name} added to the cart`);
@@ -11261,6 +11478,7 @@ function bellSheet(){
 
 /* ── boot ───────────────────────────────────────────────────────────── */
 function enterBoard(){
+  $('#buildStamp').textContent = `build ${BUILD}`;
   $('#gate').hidden = true;
   $('#shell').hidden = false;
   $('#whoName').textContent = state.profile.name || 'Your board';
@@ -11431,6 +11649,11 @@ $('#gateForm').addEventListener('submit', async e => {
     touch();
     enterBoard();
   } finally { go.disabled = false; }
+});
+
+$('#themeSeg').addEventListener('click', e => {
+  const b = e.target.closest('button');
+  if (b) setTheme(b.dataset.t);
 });
 
 $('#gateOther').onclick = () => { showNew(); };

@@ -48,5 +48,7 @@ Serve over **HTTP, not `file://`**. Browsers partition storage differently for
 | `taskrepeat` | All seven repeat kinds, rolling forward, skipping weekends, editing one |
 | `mine` | Mine filling itself from what you buy, cook with, repeat and type in |
 | `mineing` | The recipe builder's Mine tab: ranking, search, plus, drag, your own things |
+| `keep` | The star on a library row keeping a thing in Mine, and taking it back out |
+| `theme` | Auto / Light / Dark, surviving a reload, and the sign-in gate honouring it |
 
 Screenshots land in `tests/screenshots/`.

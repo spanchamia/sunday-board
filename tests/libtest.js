@@ -47,7 +47,7 @@ const URL = BASE;
 
   // THE FACT SHEET
   await page.fill('#ingSearch','paneer'); await page.waitForTimeout(400);
-  await page.click('#ingResults .pick');
+  await page.click('#ingResults .pick .info');
   await page.waitForSelector('#scrim:not([hidden])');
   await page.waitForTimeout(400);
   await page.screenshot({ path:'screenshots/y3-factsheet.png' });
@@ -65,7 +65,7 @@ const URL = BASE;
   await page.fill('#ingSearch','toor dal'); await page.waitForTimeout(400);
   const names = await page.$$eval('#ingResults .pick b', b=>b.map(x=>x.textContent));
   const bi = names.findIndex(n => /boiled/.test(n));
-  await (await page.$$('#ingResults .pick'))[bi].click();
+  await (await page.$$('#ingResults .pick .info'))[bi].click();
   await page.waitForTimeout(400);
   await page.screenshot({ path:'screenshots/y4-cooked.png' });
   console.log('\ncooked-form note:', (await page.textContent('.derivednote')).replace(/\s+/g,' ').slice(0,180));
@@ -100,7 +100,7 @@ const URL = BASE;
   await dp.click('#nav button[data-v=pantry]'); await dp.waitForTimeout(500);
   await dp.click('#newFoodBtn'); await dp.waitForTimeout(300);
   await dp.fill('#ingSearch','kimchi'); await dp.waitForTimeout(400);
-  await dp.click('#ingResults .pick'); await dp.waitForTimeout(400);
+  await dp.click('#ingResults .pick .info'); await dp.waitForTimeout(400);
   await dp.screenshot({ path:'screenshots/y7-dark.png' });
 
   console.log('\nERRORS:', errs.length ? errs : 'none');
