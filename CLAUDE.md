@@ -18,8 +18,8 @@ design notes, decisions, previous iterations and open questions. Keep it current
   family boards synced across devices, meal planning, shopping that saves money
   (bulk / warehouse stores) and time (fewer trips), a curated "My Home" catalogue
   with nested categories, shareable dishes, and dish prep tasks on the calendar.
-- This is the **third iteration**: (1) Go + HTML server on a home desktop
-  (https://github.com/spanchamia/fcapp), (2) FlutterFlow app "TenBy12" on Firebase
+- This is the **third iteration**: (1) fcapp, Go + MySQL on a home desktop
+  (spanchamia/fcapp, private; reviewed, see PLAN.md §1a), (2) FlutterFlow app "TenBy12" on Firebase
   (too slow), (3) this repo, forked from a collaborator's "Sunday Board".
 - **Decision: fresh build.** The existing Sunday Board code in this repo is a
   *reference* (ingredient/supply data, nutrition maths, repeat logic, shelf tree),
@@ -36,7 +36,7 @@ design notes, decisions, previous iterations and open questions. Keep it current
 - **Core of v1 (proposed):** the weekend "Plan & Shop" flow: one list with reasons,
   staples vs. fresh, "Have it" pruning, learned restock cadence, split by store.
   Generic for all household items. See PLAN.md §1a (pain points) and §3a.
-- **Next steps:** review the Go repo; plan the import of the exported TenBy12 data; settle phase 0 (stack, data model), then phase 1.
+- **Next steps:** plan the import of the exported TenBy12 data; settle phase 0 (stack, data model), then phase 1.
 
 ## The existing Sunday Board code
 

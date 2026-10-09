@@ -79,7 +79,22 @@ npm run serve   # (other terminal) then e.g.  npm run cart / npm run planner
 
 ## 1a. Previous iterations (owner's earlier attempts)
 
-1. **Go + HTML server on a home desktop.** Code: https://github.com/spanchamia/fcapp (not yet reviewed).
+1. **fcapp, "family calendar app"** (Mar 2023 – Jan 2024). Go + MySQL, server-rendered
+   HTML on a home desktop. Repo: spanchamia/fcapp (private). Reviewed 2026-10-08:
+   - Three sub-apps: `go/` (first version), `masterdb/` (a master item database, the
+     "universe of items" idea, Aug 2023) and `fc2/` (rewrite, Sep 2023 onward).
+   - Features: items, dishes → ingredients, categories for items and dishes (a dish
+     can be in several), meal categories, weekly and monthly meal plans, shopping
+     list generated from the weekly plan, items → stores, **filter the shopping list
+     by store**, a "shopping bag" to mark many items bought at once, pantry,
+     shopping history, quantity on list items, **dish suggestions from last-eaten
+     date + how often to make it**, similar-name detection to avoid duplicates, and
+     an email page (Gmail SMTP).
+   - Same core ideas as TenBy12, which came next. fcapp had a few TenBy12 lacks:
+     store filter, bulk "bought", monthly view, duplicate detection, quantities.
+   - Lessons: SQL built by string concatenation (injection risk; use parameterised
+     queries / an ORM); a Gmail address and app password are hard-coded in
+     `go/mail/mail.go` and in git history (owner advised to revoke the app password).
 2. **FlutterFlow app "TenBy12"** (hosted on flutterflow.app; URL kept out of this public repo). Abandoned
    because it was too slow. Reviewed read-only on 2026-10-07:
    - **Home screen tiles:** Kitchen, Meals, Meal Plan, Shopping list, Stores, Home,
@@ -297,6 +312,7 @@ _Nothing yet._
 
 | Date | Change | Commit |
 |---|---|---|
+| 2026-10-08 | Reviewed fcapp (iteration 1); notes in §1a | — |
 | 2026-10-08 | Owner Q&A on TenBy12 logic and pain points; purchase-history check; Plan & Shop design | — |
 | 2026-10-08 | Added G10 (delivery ordering), extensibility principle and design notes | — |
 | 2026-10-08 | Firebase export done; TenBy12 user journeys + data model in §1a; export script in `tools/` | — |
