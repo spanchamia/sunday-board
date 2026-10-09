@@ -127,6 +127,25 @@ npm run serve   # (other terminal) then e.g.  npm run cart / npm run planner
         shopping list doesn't use this yet (not split by store). G1 gap.
      7. *AI experiment:* a `generate` collection (LLM prompts, e.g. "recommend a
         breakfast from my dishes"), mostly erroring.
+   - **How the logic works (owner, 2026-10-08):**
+     - *Recommended items:* due when time since last purchase > the item's "every N
+       weeks" (set when the item is added). Buying should clear it until next due, but
+       that was never implemented.
+     - *Plan → list:* covers the 7 days shown. Also wanted: one tap adds everything a
+       dish needs (e.g. an unplanned weekend dish).
+     - *Prep tasks:* created when a dish is added to a day; after that, no link to the
+       dish. Just reminders, ticked when done.
+   - **Family rhythm:** plan meals at Saturday/Sunday breakfast; refer to the plan in
+     the week; main shop at the weekend, small weekday top-up.
+   - **Biggest pain points:** (1) *pruning the list*: it over-counts things already at
+     home, e.g. spices bought every ~6 months get added for every dish; (2) restock
+     items are forgotten because they live in a separate window; (3) wish: the app
+     learns how often things are bought.
+   - **Purchase history check (2026-10-08):** 242 purchases of 97 items since Nov 2024,
+     but only 22 items bought 3+ times; most were ticked once. The "every N weeks"
+     settings are often far off (Greek yogurt set to 1 week, actually ~14; tomatoes 1
+     vs ~5). Learning is feasible but needs every purchase recorded, so marking
+     "bought" must be effortless.
    - **Archery collections** in the same Firebase project belong to a separate use;
      ignore for now (possible future module).
    - **Data volume (real family):** 316 items, 28 item categories, 99 dishes with 612
@@ -215,6 +234,27 @@ uptime would become our job.
   typed code, automated tests, and CLAUDE.md kept current, so Claude (or anyone)
   can change one feature safely.
 
+**The weekend "Plan & Shop" flow (answers the pruning pain).**
+- *One list, with reasons.* Meal-plan ingredients, restocks that are due, and manual
+  adds all land on one list, each saying why ("for Chole, Tue" / "usually every
+  ~3 weeks, last bought 4 weeks ago"). No separate Recommended window.
+- *Staples vs. fresh.* Each item has a kind: **fresh** (vegetables, dairy, bread)
+  or **staple** (spices, oils, rice, dals). A dish adds its fresh ingredients to the
+  list; its staples don't. Staples come up only when their restock is due or someone
+  marks them low.
+- *Quick prune.* Every suggested row gets "Have it": it drops off and its restock
+  date moves out, which also teaches the app. "Bought" resets the timer.
+- *Learned cadence.* Per item, estimate the usual gap between purchases from history
+  (median of recent gaps, nudged by "have it" taps); start from the family's setting
+  or a sensible default per category; show it in plain words. Plain statistics, no AI.
+- *Then split by store* for the trip (G1).
+- *One tap from any dish:* "add what this needs" (fresh items only, staples if low).
+- *Not just food.* "Staple vs. fresh" is really "restocked on a rhythm vs. bought for a
+  specific need", so the same mechanism covers cleaning supplies, detergents,
+  toiletries and anything else in My Home. Owner confirmed (2026-10-08): build it as a
+  reusable foundation for all household items, not a kitchen-only feature.
+- This flow is the heart of the first version: it is the family's weekly routine.
+
 **Per-goal thoughts**
 - G1 savings: needs usual store per item, pack/bulk size, and a rough stock level.
   Start with plenty / low / out, not exact quantities. Shopping list splits by store
@@ -238,7 +278,7 @@ _Smaller ideas and follow-ups. One line each._
 
 | # | Idea | Area | Notes |
 |---|---|---|---|
-| | | | |
+| B1 | Retire TenBy12 once the family has switched: delete the FlutterFlow app and its Firebase data (keep the export) | Migration | Its URL is in this repo's history (commit 902d6ac); deleting the app makes that moot |
 
 ## 5. In progress
 
@@ -257,6 +297,7 @@ _Nothing yet._
 
 | Date | Change | Commit |
 |---|---|---|
+| 2026-10-08 | Owner Q&A on TenBy12 logic and pain points; purchase-history check; Plan & Shop design | — |
 | 2026-10-08 | Added G10 (delivery ordering), extensibility principle and design notes | — |
 | 2026-10-08 | Firebase export done; TenBy12 user journeys + data model in §1a; export script in `tools/` | — |
 | 2026-10-07 | Added `CLAUDE.md` pointing future sessions to this plan | — |
@@ -270,6 +311,7 @@ _Nothing yet._
 
 | Date | Decision | Why |
 |---|---|---|
+| 2026-10-08 | Restock/stock logic is generic across all household items (food, cleaning, toiletries…) | Owner wants a reusable foundation for more categories |
 | 2026-10-08 | Design for extensibility: shared core + feature modules + integration plug-ins | Owner wants more use cases over time and faster changes with Claude |
 | 2026-10-07 | **Fresh build**; current app kept as reference (data, nutrition maths, repeat logic, shelf tree) | Multi-user sync, backend and phone/tablet needs change the foundation |
 

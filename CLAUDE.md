@@ -33,6 +33,9 @@ design notes, decisions, previous iterations and open questions. Keep it current
 - TenBy12 is in daily use by the owner's family; its Firebase export lives in
   `firebase-export/` (git-ignored, contains family data; never commit). Ignore the
   `archery_*` collections for now.
+- **Core of v1 (proposed):** the weekend "Plan & Shop" flow: one list with reasons,
+  staples vs. fresh, "Have it" pruning, learned restock cadence, split by store.
+  Generic for all household items. See PLAN.md §1a (pain points) and §3a.
 - **Next steps:** review the Go repo; plan the import of the exported TenBy12 data; settle phase 0 (stack, data model), then phase 1.
 
 ## The existing Sunday Board code
