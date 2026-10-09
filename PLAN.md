@@ -80,7 +80,7 @@ npm run serve   # (other terminal) then e.g.  npm run cart / npm run planner
 ## 1a. Previous iterations (owner's earlier attempts)
 
 1. **Go + HTML server on a home desktop.** Code: https://github.com/spanchamia/fcapp (not yet reviewed).
-2. **FlutterFlow app "TenBy12"** (https://app2-6vbw01.flutterflow.app/). Abandoned
+2. **FlutterFlow app "TenBy12"** (hosted on flutterflow.app; URL kept out of this public repo). Abandoned
    because it was too slow. Reviewed read-only on 2026-10-07:
    - **Home screen tiles:** Kitchen, Meals, Meal Plan, Shopping list, Stores, Home,
      To dos. **Bottom bar:** Home, Shopping List, Profile. Phone-first layout, dark theme.
@@ -109,7 +109,37 @@ npm run serve   # (other terminal) then e.g.  npm run cart / npm run planner
      - Fix: make categories a real tree; replace Sunday Board's fixed 4 meal slots
        with family-defined meal types (e.g. school lunch); dedupe items; speed.
      - Migrate: this family's real items, dishes and stores. Owner is exporting the
-       data from Firebase (pending).
+       data from Firebase (in progress, 2026-10-08).
+   - **User journeys (2026-10-08, from the app + Firebase export):**
+     1. *Plan meals:* date → meal type (School lunch, Dinner…) → dishes. Each dish
+        carries prep steps (`dish_todos`: name + N hours/days before), which become
+        dated To dos automatically, e.g. Idli Sambhar → "Soak idli rice" 2 days
+        before, "Grind batter" 1 day before; Chole → soak beans 12 h before.
+     2. *Plan → shopping list:* "Create shopping list" pulls each planned dish's
+        ingredients (dish → item category → items) into the list, grouped by
+        category. No quantities anywhere.
+     3. *Shop:* list grouped by category; ✓ marks bought (feeds `purchase_history`
+        and `last_purchase_date`), – removes.
+     4. *Restock suggestions:* each item has a repurchase interval in weeks;
+        "Recommended items" ≈ items due again since their last purchase.
+     5. *Dish suggestions:* dishes carry how often to make them and weekday/weekend.
+     6. *Stores:* items are linked to the stores that carry them (543 links), but the
+        shopping list doesn't use this yet (not split by store). G1 gap.
+     7. *AI experiment:* a `generate` collection (LLM prompts, e.g. "recommend a
+        breakfast from my dishes"), mostly erroring.
+   - **Archery collections** in the same Firebase project belong to a separate use;
+     ignore for now (possible future module).
+   - **Data volume (real family):** 316 items, 28 item categories, 99 dishes with 612
+     ingredient links, 9 meal types, 12 stores, 115 day-plans since Sep 2025, 242
+     purchases, 55 todos. Full schema: `firebase-export/schema.txt` (not committed).
+   - **Issues seen:** Meal plan page showed no entries for Oct 11–12 although they
+     exist in the data (display bug or slow load); todos are plain text with the date
+     in the title, not linked to the meal; `Families.members` lists 1 user while 3
+     users point at the family.
+   - **In daily use** by the owner's family (two adults, one shared family profile). All other
+     users are test accounts; migrate only the real family, skip test users' data.
+     The new app must match TenBy12's everyday features before the family switches;
+     run both side by side until then. This family is the first pilot.
 
 ## 2. Product goals (from the owner, 2026-10-07)
 
@@ -124,6 +154,12 @@ npm run serve   # (other terminal) then e.g.  npm run cart / npm run planner
 | G7 | **Category hierarchy** under *My Home* (e.g. Kitchen › Pantry / Vegetables / Fruits) | Builds on the existing shelf tree; editable per family |
 | G8 | **Easy dish entry + shared dish library**; import other families' dishes and shop from them | Publish/import flow, ingredients matched to the catalogue, privacy by default |
 | G9 | **Prep tasks**: adding a dish to the plan puts its prep steps on the calendar | Dish carries prep steps with lead times; tasks linked to the meal |
+| G10 | **Delivery ordering (long-term)**: send some items to Instacart / DoorDash for delivery | Needs per-item quantities and product matching; an "ordering provider" plug-in (see §3a) |
+
+**Guiding principle: easy to extend.** The app should grow into more household use
+cases over time (archery logs, chores, school schedules…) without rewrites. Owner's
+motivation for iteration 3: TenBy12 is useful but changes take too long; building with
+Claude should make changes faster, so the code must stay simple and well-organised.
 
 ## 3. Proposed phases (draft — to confirm)
 
@@ -136,6 +172,7 @@ npm run serve   # (other terminal) then e.g.  npm run cart / npm run planner
 | 4 | Money & trips: stores, bulk sizes, stock levels, "what to buy where" | G1 |
 | 5 | Kitchen tablet view | G5 |
 | 6 | Shared dish library (publish / browse / import) | G8 |
+| Later | Delivery ordering via Instacart (then others) | G10 |
 
 ## 3a. Design notes (reasoning behind the plan)
 
@@ -160,6 +197,23 @@ use allowed, deploys on push). Vercel's free plan is non-commercial only. Backen
 managed Supabase: free to build/test (pauses after 7 idle days), Pro ~$25/mo for
 real families. Self-hosting on a VPS rejected for now: backups, security and
 uptime would become our job.
+
+**Built to extend (G10 and beyond).**
+- *Shared core + feature modules.* Core = families, members, items, categories,
+  stores, calendar entries, tasks. Features (meals, shopping, restock, prep tasks…)
+  are separate modules on top, each with its own screens and tables. A new use case
+  is a new module, not edits everywhere.
+- *One calendar, many sources.* Meals, prep tasks, chores, events all appear as
+  calendar entries linked back to what created them (fixes TenBy12's plain-text todos).
+- *Integrations behind a plug-in interface.* "Ordering providers" (Instacart first:
+  its Developer Platform can turn a shopping list into a shoppable Instacart list;
+  DoorDash's public APIs appear aimed at businesses, so check later). Stores and
+  providers are swappable without touching the shopping module.
+- *Quantities from the start.* Delivery ordering needs amounts and units, which
+  TenBy12 never stored, so the new data model includes them even before G10.
+- *Conventions for AI-assisted development.* Small files, one folder per module,
+  typed code, automated tests, and CLAUDE.md kept current, so Claude (or anyone)
+  can change one feature safely.
 
 **Per-goal thoughts**
 - G1 savings: needs usual store per item, pack/bulk size, and a rough stock level.
@@ -203,6 +257,8 @@ _Nothing yet._
 
 | Date | Change | Commit |
 |---|---|---|
+| 2026-10-08 | Added G10 (delivery ordering), extensibility principle and design notes | — |
+| 2026-10-08 | Firebase export done; TenBy12 user journeys + data model in §1a; export script in `tools/` | — |
 | 2026-10-07 | Added `CLAUDE.md` pointing future sessions to this plan | — |
 | 2026-10-07 | Reviewed FlutterFlow app (iteration 2); notes in §1a | — |
 | 2026-10-07 | Added design notes (reasoning from planning discussion) | — |
@@ -214,12 +270,18 @@ _Nothing yet._
 
 | Date | Decision | Why |
 |---|---|---|
+| 2026-10-08 | Design for extensibility: shared core + feature modules + integration plug-ins | Owner wants more use cases over time and faster changes with Claude |
 | 2026-10-07 | **Fresh build**; current app kept as reference (data, nutrition maths, repeat logic, shelf tree) | Multi-user sync, backend and phone/tablet needs change the foundation |
 
 ## 8. Open questions
 
 - **Backend:** Supabase (Postgres, auth, realtime) vs. Firebase (Firestore, strong offline sync) vs. other?
 - **Hosting (proposed):** front end on Cloudflare Pages (free, static, auto-deploy from GitHub); backend on Supabase managed (free tier to start, Pro ~$25/mo once real families rely on it, since free projects pause after 7 days idle); optional custom domain ~$10–20/yr. To confirm.
+- **Sign-in (proposed):** Supabase Auth with Google + Apple sign-in, plus email one-time
+  code / magic link as a fallback (no passwords to forget). Skip SMS (per-message cost).
+  Join a family by invite link. Kitchen tablet: signed in as a family member, or a
+  later "kitchen display" device link. Keeping Firebase Auth via Supabase's third-party
+  auth is possible but means two vendors; TenBy12's 4 users can simply sign in again.
 - **Data model:** move from one JSON blob per board to one row per item (needed so two people editing at once don't overwrite each other).
 - **Stock tracking depth:** simple status (plenty / low / out) or real quantities?
 - **Shared dishes:** import as a copy (family edits freely) or keep a link to the original? Moderation?

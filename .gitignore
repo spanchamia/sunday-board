@@ -3,3 +3,8 @@ tests/screenshots/*
 !tests/screenshots/.gitkeep
 .DS_Store
 *.log
+
+# Firebase export (tools/firebase_export.py): never commit the key or the data
+firebase-export/
+*service-account*.json
+*firebase-adminsdk*.json

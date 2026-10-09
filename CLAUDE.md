@@ -27,8 +27,13 @@ design notes, decisions, previous iterations and open questions. Keep it current
 - **Proposed stack (not final):** installable web app (PWA); Supabase backend
   (Postgres, auth, realtime, row-level security per family); front end hosted on
   Cloudflare Pages. Open questions are in PLAN.md §8.
-- **Next steps:** review the Go repo; import the TenBy12 data the owner is
-  exporting from Firebase; settle phase 0 (stack, data model), then phase 1.
+- **Design for extensibility:** shared core + feature modules + integration plug-ins
+  (long-term: Instacart/DoorDash ordering, G10). Keep files small, one folder per
+  module, typed code and tests, so changes stay quick and safe. See PLAN.md §3a.
+- TenBy12 is in daily use by the owner's family; its Firebase export lives in
+  `firebase-export/` (git-ignored, contains family data; never commit). Ignore the
+  `archery_*` collections for now.
+- **Next steps:** review the Go repo; plan the import of the exported TenBy12 data; settle phase 0 (stack, data model), then phase 1.
 
 ## The existing Sunday Board code
 
