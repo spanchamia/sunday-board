@@ -1,0 +1,25 @@
+{
+  "name": "sunday-board-app",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs",
+    "dev": "node build.mjs --serve",
+    "typecheck": "tsc --noEmit && tsc --noEmit -p tests",
+    "test": "node --import tsx --test tests/unit/*.test.ts",
+    "e2e": "node tests/e2e/smoke.mjs"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.58.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "esbuild": "^0.25.10",
+    "tsx": "^4.20.0",
+    "typescript": "^5.9.0",
+    "@types/node": "^22.18.0"
+  }
+}

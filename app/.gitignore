@@ -1,0 +1,4 @@
+node_modules/
+dist/
+.offline-deps/
+tests/e2e/screens/
