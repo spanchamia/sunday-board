@@ -5,6 +5,7 @@ import type { Dish } from '../../lib/types';
 import { rankByName } from '../../logic/text';
 import { Icon } from '../../ui/Icon';
 import { DishSheet } from './DishSheet';
+import { AddDishNeedsSheet } from '../list/AddDishNeedsSheet';
 import { MealTypesSheet } from './MealTypesSheet';
 
 /** All the family's dishes, filterable by meal type and searchable. */
@@ -13,6 +14,7 @@ export function DishesView({ family, data, index, reload }: { family: FamilyData
   const [mealTypeId, setMealTypeId] = useState<string | null>(null);
   const [open, setOpen] = useState<Dish | 'new' | null>(null);
   const [types, setTypes] = useState(false);
+  const [shopFor, setShopFor] = useState<Dish | null>(null);
 
   let list = mealTypeId ? data.dishes.filter((d) => (index.mealTypesOfDish.get(d.id) ?? []).includes(mealTypeId)) : data.dishes;
   if (q.trim()) list = rankByName(list, q, (d) => d.name);
@@ -43,11 +45,11 @@ export function DishesView({ family, data, index, reload }: { family: FamilyData
       {list.length ? (
         <ul className="list panel">
           {list.map((d) => (
-            <li key={d.id}>
-              <button className="list-row" onClick={() => setOpen(d)}>
+            <li key={d.id} className="row" style={{ gap: 0 }}>
+              <button className="list-row grow" onClick={() => setOpen(d)}>
                 <span className="grow">{d.name}<span className="meta" style={{ display: 'block' }}>{summary(d)}</span></span>
-                <Icon name="chev" className="chev" />
               </button>
+              <button className="icon-btn" style={{ marginRight: 8 }} onClick={() => setShopFor(d)} aria-label={`Add what ${d.name} needs to the list`}><Icon name="cart" /></button>
             </li>
           ))}
         </ul>
@@ -55,6 +57,8 @@ export function DishesView({ family, data, index, reload }: { family: FamilyData
 
       {open && <DishSheet family={family} data={data} index={index} dish={open === 'new' ? null : open}
         initialName={open === 'new' ? q.trim() : ''} initialMealTypeId={mealTypeId} onClose={() => setOpen(null)} reload={reload} />}
+      {shopFor && <AddDishNeedsSheet family={family} dishName={shopFor.name} itemIds={(index.ingredientsOfDish.get(shopFor.id) ?? []).map((i) => i.item_id)}
+        reason={{ kind: 'dish', dishId: shopFor.id }} onClose={() => setShopFor(null)} />}
       {types && <MealTypesSheet family={family} data={data} onClose={() => setTypes(false)} reload={reload} />}
     </div>
   );

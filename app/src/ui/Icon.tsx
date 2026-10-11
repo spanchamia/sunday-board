@@ -16,6 +16,7 @@ const paths: Record<string, string> = {
   calendar: 'M4 6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1zM4 10h16M8 2v4M16 2v4',
   clock: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 7v5l3 2',
   trash: 'M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3',
+  cart: 'M3 4h2l2.4 11h10.2L20 7H6.2M9.5 20a1 1 0 1 0 0-.01M17 20a1 1 0 1 0 0-.01',
   share: 'M12 4v11M7 9l5-5 5 5M5 14v5h14v-5',
 };
 

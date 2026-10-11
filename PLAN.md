@@ -356,12 +356,18 @@ _Smaller ideas and follow-ups. One line each._
   Usual / Extra / Just a bit amounts, split by store, bulk "bought", learned restock
   rhythm from purchase history, one tap "add what this dish needs".
 - **Data:** 32 current list items and 217 purchases already imported.
-- **Status:** not started.
+- **Status:** started early (owner request, 2026-10-10): "Add to list" from any dish
+  (fresh ticked, staples unticked, already-listed rows gain the reason) and a basic
+  List tab (grouped by category, reasons, tick = bought + purchase recorded, undo,
+  remove, add by typing). Still to do: Have it, Usual/Extra/Just a bit, split by
+  store, bulk bought, restock suggestions from learned rhythm, planned-week fresh
+  ingredients onto the list.
 
 ## 6. Change log
 
 | Date | Change | Commit |
 |---|---|---|
+| 2026-10-10 | "Add to list" from a dish (Dishes row cart, dish editor, planned meal) and a basic List tab | (this commit) |
 | 2026-10-10 | **Build step 2 done:** Plan tab with Week (rolling 7 days, meals by family meal type, the day's to-dos), add-a-meal with suggestions from the family's history, prep reminders created at the right time and moved/removed with their meal, Dishes (ingredients from My Home, prep steps, how often, weekday/weekend), Meal types (order, usual time), To-dos (shared or just me). Signed-in browser test against a fake database (26 checks) | (this commit) |
 | 2026-10-10 | Appearance setting: Automatic / Light / Dark on the Family page, per device, applied before first paint | (this commit) |
 | 2026-10-10 | TenBy12 data imported into the family "Panchamia": 285 items (31 duplicates merged, 99 linked to catalogue), 29 categories, 12 stores, 547 store links, 217 purchases, 9 meal types, 90 dishes, 592 ingredients, 6 prep steps, 152 planned dishes, 32 list items, 4 to-dos | 153902b |

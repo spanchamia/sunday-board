@@ -16,3 +16,5 @@ export type DishIngredient = Tables<'dish_ingredients'>;
 export type PrepStep = Tables<'dish_prep_steps'>;
 export type PlannedMeal = Tables<'planned_meals'>;
 export type Task = Tables<'tasks'>;
+export type ListEntry = Tables<'list_entries'>;
+export type ListReason = Tables<'list_entry_reasons'>;

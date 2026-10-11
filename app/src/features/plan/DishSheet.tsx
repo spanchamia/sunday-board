@@ -9,6 +9,7 @@ import { norm, rankByName } from '../../logic/text';
 import { Icon } from '../../ui/Icon';
 import { Sheet } from '../../ui/Sheet';
 import { useToast } from '../../ui/Toast';
+import { AddDishNeedsSheet } from '../list/AddDishNeedsSheet';
 
 type Step = DishDraft['prepSteps'][number] & { key: string; amount: string; unit: 'hours' | 'days' };
 
@@ -35,6 +36,7 @@ export function DishSheet({ family, data, index, dish, initialName = '', initial
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [extraItems, setExtraItems] = useState(family.items);
+  const [shop, setShop] = useState(false);
 
   const itemName = new Map(extraItems.map((i) => [i.id, i.name]));
   const chosen = new Set(ingredients.map((i) => i.itemId));
@@ -83,9 +85,17 @@ export function DishSheet({ family, data, index, dish, initialName = '', initial
 
   const setStep = (key: string, patch: Partial<Step>) => setSteps(steps.map((s) => (s.key === key ? { ...s, ...patch } : s)));
 
+  if (shop && dish) {
+    return <AddDishNeedsSheet family={family} dishName={dish.name} itemIds={(index.ingredientsOfDish.get(dish.id) ?? []).map((i) => i.item_id)}
+      reason={{ kind: 'dish', dishId: dish.id }} onClose={() => setShop(false)} />;
+  }
+
   return (
     <Sheet title={dish ? dish.name : 'New dish'} onClose={onClose}>
       <form className="stack" onSubmit={save} noValidate>
+        {dish && (index.ingredientsOfDish.get(dish.id)?.length ?? 0) > 0 && (
+          <button type="button" className="btn primary wide" onClick={() => setShop(true)}><Icon name="cart" />Add what it needs to the list</button>
+        )}
         <label className="field"><span>Name</span>
           <input className="input" value={name} onChange={(e) => { setName(e.target.value); setError(null); }} maxLength={80} autoFocus={!dish} />
         </label>

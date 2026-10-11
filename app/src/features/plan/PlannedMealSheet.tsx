@@ -6,9 +6,11 @@ import { explain } from '../../lib/supabase';
 import type { PlannedMeal } from '../../lib/types';
 import { dayLabel } from '../../logic/dates';
 import { leadLabel } from '../../logic/prep';
+import { Icon } from '../../ui/Icon';
 import { Sheet } from '../../ui/Sheet';
 import { useToast } from '../../ui/Toast';
 import { DishSheet } from './DishSheet';
+import { AddDishNeedsSheet } from '../list/AddDishNeedsSheet';
 import { TaskRow } from './TaskRow';
 
 /** One planned dish: what it needs, its prep reminders, move it or take it off the plan. */
@@ -20,6 +22,7 @@ export function PlannedMealSheet({ family, data, index, planned, onClose, reload
   const [date, setDate] = useState(planned.date);
   const [mealTypeId, setMealTypeId] = useState(planned.meal_type_id);
   const [editDish, setEditDish] = useState(false);
+  const [shop, setShop] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const itemName = new Map(family.items.map((i) => [i.id, i.name]));
   const ingredients = dish ? (index.ingredientsOfDish.get(dish.id) ?? []) : [];
@@ -44,6 +47,10 @@ export function PlannedMealSheet({ family, data, index, planned, onClose, reload
     catch (e) { setError(explain(e as Error)); }
   }
 
+  if (shop && dish) {
+    return <AddDishNeedsSheet family={family} dishName={dish.name} itemIds={ingredients.map((i) => i.item_id)}
+      reason={{ kind: 'planned_meal', plannedMealId: planned.id }} onClose={() => setShop(false)} />;
+  }
   if (editDish && dish) {
     return <DishSheet family={family} data={data} index={index} dish={dish} onClose={() => setEditDish(false)} reload={reload} />;
   }
@@ -71,7 +78,10 @@ export function PlannedMealSheet({ family, data, index, planned, onClose, reload
           </section>
         )}
 
-        <button className="btn" onClick={() => setEditDish(true)} disabled={!dish}>Edit dish</button>
+        <div className="row">
+          <button className="btn primary grow" onClick={() => setShop(true)} disabled={!dish || !ingredients.length}><Icon name="cart" />Add to list</button>
+          <button className="btn grow" onClick={() => setEditDish(true)} disabled={!dish}>Edit dish</button>
+        </div>
 
         <section className="stack" aria-labelledby="move-h">
           <h2 id="move-h" className="small">Move</h2>

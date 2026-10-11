@@ -26,7 +26,11 @@ const db = () => ({
     { id: 'i-tom', family_id: F, category_id: 'c-veg', name: 'Tomatoes', restock_mode: 'as_needed', archived_at: null },
     { id: 'i-chana', family_id: F, category_id: 'c-pan', name: 'Garbanzo beans', restock_mode: 'staple', restock_every_days: 182, archived_at: null },
     { id: 'i-rice', family_id: F, category_id: 'c-pan', name: 'Idli rice', restock_mode: 'staple', archived_at: null },
+    { id: 'i-lemon', family_id: F, category_id: 'c-veg', name: 'Lemons', restock_mode: 'as_needed', archived_at: null },
   ],
+  list_entries: [{ id: 'le-onion', family_id: F, item_id: 'i-onion', status: 'to_buy', amount_hint: 'usual', store_id: null, added_at: '2026-10-09' }],
+  list_entry_reasons: [{ id: 'lr-1', entry_id: 'le-onion', family_id: F, reason: 'manual', dish_id: null, planned_meal_id: null }],
+  item_events: [],
   stores: [{ id: 's-1', family_id: F, name: 'Costco', sort: 0 }],
   item_stores: [],
   meal_types: [
@@ -46,6 +50,7 @@ const db = () => ({
   dish_ingredients: [
     { dish_id: 'd-chole', item_id: 'i-chana', family_id: F, amount: '2 cups' },
     { dish_id: 'd-chole', item_id: 'i-onion', family_id: F, amount: null },
+    { dish_id: 'd-chole', item_id: 'i-lemon', family_id: F, amount: null },
     { dish_id: 'd-idli', item_id: 'i-rice', family_id: F, amount: null },
   ],
   dish_prep_steps: [
@@ -131,8 +136,8 @@ for (const scheme of ['light', 'dark']) {
 
   // Move it to the next day: reminder moves too
   await page.locator(`section[aria-label$="${target}"]`).getByRole('button', { name: 'Chole' }).click();
-  await page.getByRole('dialog').getByText('Garbanzo beans, Onions').waitFor();
-  check(await page.getByRole('dialog').getByText('Garbanzo beans, Onions').isVisible(), 'planned dish lists what it needs');
+  await page.getByRole('dialog').getByText('Garbanzo beans, Lemons, Onions').waitFor();
+  check(await page.getByRole('dialog').getByText('Garbanzo beans, Lemons, Onions').isVisible(), 'planned dish lists what it needs');
   await shot(page, 'planned-meal');
   await page.getByRole('dialog').locator('input[type="date"]').fill(day(4));
   await page.getByRole('dialog').getByRole('button', { name: 'Move', exact: true }).click();
@@ -154,7 +159,7 @@ for (const scheme of ['light', 'dark']) {
   const { page, writes, errors } = await open();
   await page.goto(`${base}/#/meals/dishes`);
   await page.getByRole('heading', { name: 'Dishes' }).waitFor();
-  check(await page.getByText('2 ingredients, 1 prep step').isVisible(), 'dish list summarises Chole');
+  check(await page.getByText('3 ingredients, 1 prep step').isVisible(), 'dish list summarises Chole');
   await page.getByRole('button', { name: /^Chole/ }).click();
   const sheet = page.getByRole('dialog');
   check(await sheet.getByLabel('Prep step').inputValue() === 'Soak garbanzo beans', 'prep step shown');
@@ -165,7 +170,7 @@ for (const scheme of ['light', 'dark']) {
   await sheet.getByRole('button', { name: 'Save' }).click();
   await page.getByRole('status').filter({ hasText: 'Saved' }).waitFor();
   const ing = writes.filter((w) => w.table === 'dish_ingredients' && w.method === 'POST').at(-1)?.rows.map((r) => r.item_id).sort();
-  check(JSON.stringify(ing) === JSON.stringify(['i-chana', 'i-onion', 'i-tom']), `ingredients saved with Tomatoes added (${ing})`);
+  check(JSON.stringify(ing) === JSON.stringify(['i-chana', 'i-lemon', 'i-onion', 'i-tom']), `ingredients saved with Tomatoes added (${ing})`);
   const stepUpdate = writes.find((w) => w.table === 'dish_prep_steps' && w.method === 'PATCH');
   check(stepUpdate?.patch?.lead_minutes === 720, 'existing prep step kept (updated, not recreated)');
   check(errors.length === 0, `dishes: no script errors ${errors.join('; ')}`);
@@ -187,6 +192,43 @@ for (const scheme of ['light', 'dark']) {
   check(errors.length === 0, `to-dos: no script errors ${errors.join('; ')}`);
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth);
   check(!overflow, 'to-dos: no sideways scrolling');
+  await page.close();
+}
+
+// 5. Shop for a dish straight from Dishes, then tick it off on the List tab
+{
+  const { page, data, writes, errors } = await open();
+  await page.goto(`${base}/#/meals/dishes`);
+  await page.getByRole('button', { name: 'Add what Chole needs to the list' }).click();
+  const sheet = page.getByRole('dialog');
+  await sheet.getByText('Garbanzo beans').waitFor();
+  const ticked = async (name) => sheet.locator('label', { hasText: name }).locator('input').isChecked();
+  check(await ticked('Lemons') && await ticked('Onions') && !(await ticked('Garbanzo beans')),
+    'fresh Lemons ticked, Onions ticked (already listed), staple Garbanzo beans not');
+  check(await sheet.getByText('Already on the list').isVisible(), 'Onions shows it is already on the list');
+  await shot(page, 'shop-for-dish');
+  await sheet.getByRole('button', { name: 'Add 2 to the list' }).click();
+  await page.getByRole('status').filter({ hasText: 'for Chole' }).waitFor();
+  const newEntries = writes.filter((w) => w.table === 'list_entries' && w.method === 'POST').flatMap((w) => w.rows);
+  check(newEntries.length === 1 && newEntries[0].item_id === 'i-lemon', 'one new row (Lemons); Onions not duplicated');
+  const reasons = writes.filter((w) => w.table === 'list_entry_reasons' && w.method === 'POST').flatMap((w) => w.rows);
+  check(reasons.length === 2 && reasons.every((r) => r.reason === 'dish' && r.dish_id === 'd-chole'), 'both rows note “for Chole”');
+
+  await page.getByRole('link', { name: 'List' }).click();
+  await page.getByRole('heading', { name: 'Shopping list' }).waitFor();
+  await page.getByText('Lemons').waitFor();
+  check(await page.getByText('For Chole, plus added by hand').isVisible(), 'Onions shows both reasons');
+  await shot(page, 'list');
+  await page.getByLabel('Bought Lemons').check();
+  await page.getByText('Bought Lemons').waitFor();
+  const entry = data.list_entries.find((e) => e.item_id === 'i-lemon');
+  check(entry?.status === 'bought' && data.item_events.some((e) => e.item_id === 'i-lemon' && e.kind === 'bought'), 'ticking records the purchase');
+  await page.getByRole('button', { name: 'Undo' }).click();
+  await page.getByLabel('Bought Lemons').waitFor();
+  check(entry?.status === 'to_buy', 'undo puts it back on the list');
+  check(errors.length === 0, `list: no script errors ${errors.join('; ')}`);
+  const overflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth);
+  check(!overflow, 'list: no sideways scrolling');
   await page.close();
 }
 

@@ -53,3 +53,23 @@ test('suggestions: due dishes first, recent ones skipped, weekend rule, meal typ
   const weekend = suggestDishes(dishes, last, new Set(['dal']), '2026-10-11', 'dinner');
   assert.deepEqual(weekend.map((s) => s.dishId), ['pavbhaji', 'new', 'biryani']);
 });
+
+import { defaultChoices, reasonText } from '../../src/logic/shopping.ts';
+
+test('adding a dish to the list ticks fresh items, not staples, and keeps what is already listed', () => {
+  const c = defaultChoices([
+    { itemId: 'chana', name: 'Garbanzo beans', staple: true },
+    { itemId: 'tom', name: 'Tomatoes', staple: false },
+    { itemId: 'cumin', name: 'Cumin seeds', staple: true },
+  ], new Set(['cumin']));
+  assert.deepEqual(c.map((x) => [x.name, x.checked, x.onList]), [
+    ['Tomatoes', true, false], ['Cumin seeds', true, true], ['Garbanzo beans', false, false],
+  ]);
+});
+
+test('list reasons read naturally', () => {
+  assert.equal(reasonText([{ reason: 'dish', dishName: 'Chole' }]), 'For Chole');
+  assert.equal(reasonText([{ reason: 'dish', dishName: 'Chole' }, { reason: 'planned_meal', dishName: 'Pav bhaji' }]), 'For Chole and Pav bhaji');
+  assert.equal(reasonText([{ reason: 'manual' }]), 'Added by hand');
+  assert.equal(reasonText([{ reason: 'dish', dishName: 'Chole' }, { reason: 'manual' }]), 'For Chole, plus added by hand');
+});

@@ -18,6 +18,15 @@ export function sessionStorageEntry() {
   };
 }
 
+// Column defaults the real database fills in (only those the app relies on).
+const DEFAULTS = {
+  list_entries: { status: 'to_buy', amount_hint: 'usual', amount: null, store_id: null, closed_at: null },
+  tasks: { done_at: null, visibility: 'family', due_time: null, planned_meal_id: null, prep_step_id: null },
+  items: { archived_at: null, restock_mode: 'as_needed', notes: '' },
+  dishes: { archived_at: null, notes: '' },
+  item_events: { happened_on: new Date().toLocaleDateString('en-CA') },
+};
+
 function matches(row, params) {
   for (const [k, v] of params) {
     if (['select', 'order', 'limit', 'offset', 'or', 'on_conflict', 'columns'].includes(k)) continue;
@@ -28,7 +37,7 @@ function matches(row, params) {
     if (op === 'is' && val === 'null' && cell != null) return false;
     if (op === 'gte' && !(String(cell) >= val)) return false;
     if (op === 'lte' && !(String(cell) <= val)) return false;
-    if (op === 'in' && !val.replace(/[()]/g, '').split(',').includes(String(cell))) return false;
+    if (op === 'in' && !val.replace(/[()"]/g, '').split(',').includes(String(cell))) return false;
   }
   return true;
 }
@@ -56,7 +65,7 @@ export async function installFake(page, db) {
     }
     if (method === 'POST') {
       const body = JSON.parse(req.postData() ?? '[]');
-      const list = (Array.isArray(body) ? body : [body]).map((r) => ({ id: randomUUID(), created_at: new Date().toISOString(), ...r }));
+      const list = (Array.isArray(body) ? body : [body]).map((r) => ({ id: randomUUID(), created_at: new Date().toISOString(), ...DEFAULTS[table], ...r }));
       db[table].push(...list);
       writes.push({ method, table, rows: list });
       return wantsObject ? json(201, list[0]) : json(201, list);
