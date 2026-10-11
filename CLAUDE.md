@@ -38,8 +38,9 @@ design notes, decisions, previous iterations and open questions. Keep it current
   "Have it", optional Usual/Extra/Just a bit amounts, learned restock, split by store),
   plus My Home items, dishes, meal plan, linked prep tasks, sync, TenBy12 import.
   Don't build later-phase features into v1; do keep the design open for them.
-- **Next steps:** design the v1 data model (from the TenBy12 export), pick the front-end
-  toolkit, set up Supabase + Cloudflare accounts, then build step 1 (PLAN.md §3).
+- **Data model agreed:** `docs/data-model.md` (read it before writing database code).
+- **Next steps:** pick the front-end toolkit, set up Supabase + Cloudflare accounts,
+  then build step 1 (PLAN.md §3).
 
 ## The existing Sunday Board code
 

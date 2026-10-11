@@ -224,6 +224,10 @@ Users: the owner's family only (two adults signed in).
   simple to-dos, shared or "just me".
 - **Shopping:** list with reasons, Have it, optional amounts, split by store, bulk
   "bought", learned restock rhythm.
+- **Item catalogue:** a shared "universe" of ~4,000 household products (from Sunday
+  Board's library) with other names, suggested category and restock mode. Used for
+  quick setup (starter packs like "Indian kitchen basics") and fast adding (type a few
+  letters, tap). Own items can always be typed in. Added to v1 on 2026-10-10.
 - **Data:** import of TenBy12 items, categories, dishes, prep steps, stores, meal types
   and purchase history on day one.
 - **Phone-ready:** installable web app, fast, usable in-store on a weak signal.
@@ -360,6 +364,8 @@ _Nothing yet._
 
 | Date | Change | Commit |
 |---|---|---|
+| 2026-10-10 | Data model agreed | — |
+| 2026-10-10 | Added item catalogue ("universe") to v1; data model draft in `docs/data-model.md` | — |
 | 2026-10-10 | Version 1 scope agreed and locked (§3) | — |
 | 2026-10-10 | Added G11 (natural-language / voice assistant), distant goal | — |
 | 2026-10-10 | Quantity design settled (optional, Usual/Extra/Just a bit) | — |
@@ -378,6 +384,7 @@ _Nothing yet._
 
 | Date | Decision | Why |
 |---|---|---|
+| 2026-10-10 | Data model agreed (`docs/data-model.md`): shared core + meals + calendar + shopping + read-only catalogue; only "just me" to-dos are private; one family per person; several dishes per meal slot allowed | Matches how the family plans and shops |
 | 2026-10-10 | V1 = replace TenBy12 for the owner's family (scope in §3); tablet, other families, shared dishes, delivery, voice come later | Finish something the family uses daily before widening scope |
 | 2026-10-10 | Quantities optional: none / Usual·Extra·Just a bit / free count in own units; no unit conversion; exact amounts only at delivery-ordering time | Families know counts ("6 tomatoes"), not pounds; required amounts would make the list a chore |
 | 2026-10-08 | Restock/stock logic is generic across all household items (food, cleaning, toiletries…) | Owner wants a reusable foundation for more categories |
