@@ -39,6 +39,19 @@ for (const [name, viewport] of [['phone', { width: 390, height: 844 }], ['tablet
     await page.close();
   }
 }
+// Appearance choice overrides the device setting, from first paint.
+for (const [choice, device, want] of [['dark', 'light', 'rgb(17, 24, 20)'], ['light', 'dark', 'rgb(246, 248, 245)'], [null, 'dark', 'rgb(17, 24, 20)']]) {
+  const page = await browser.newPage({ viewport: { width: 390, height: 844 }, colorScheme: device });
+  await page.route(/fonts\.(googleapis|gstatic)\.com/, (r) => r.abort());
+  if (choice) await page.addInitScript((c) => localStorage.setItem('sb-theme', c), choice);
+  await page.goto(base);
+  await page.getByRole('heading', { name: 'Sunday Board' }).waitFor();
+  const bg = await page.evaluate(() => getComputedStyle(document.body).backgroundColor);
+  check(bg === want, `appearance ${choice ?? 'automatic'} on a ${device} device gives ${want} (got ${bg})`);
+  if (process.env.SCREENS) await page.screenshot({ path: `tests/e2e/screens/theme-${choice ?? 'auto'}-on-${device}.png` });
+  await page.close();
+}
+
 const manifest = await (await fetch(`${base}/manifest.webmanifest`)).json();
 check(manifest.icons.some((i) => i.purpose === 'maskable'), 'manifest has a maskable icon');
 check((await fetch(`${base}/sw.js`)).ok, 'service worker is published');

@@ -370,6 +370,7 @@ _Smaller ideas and follow-ups. One line each._
 
 | Date | Change | Commit |
 |---|---|---|
+| 2026-10-10 | Appearance setting: Automatic / Light / Dark on the Family page, per device, applied before first paint | (this commit) |
 | 2026-10-10 | TenBy12 data imported into the family "Panchamia": 285 items (31 duplicates merged, 99 linked to catalogue), 29 categories, 12 stores, 547 store links, 217 purchases, 9 meal types, 90 dishes, 592 ingredients, 6 prep steps, 152 planned dishes, 32 list items, 4 to-dos | 153902b |
 | 2026-10-10 | Live at https://sunday-board.pages.dev (Cloudflare Pages builds `app/` from `main`) | — |
 | 2026-10-10 | Catalogue loaded: 4,064 products (1,483 staples), 5 starter sets | 3501ad3, 794e7a9 |

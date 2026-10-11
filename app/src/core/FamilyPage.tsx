@@ -7,6 +7,7 @@ import type { Store } from '../lib/types';
 import { Icon } from '../ui/Icon';
 import { Sheet } from '../ui/Sheet';
 import { useToast } from '../ui/Toast';
+import { ThemeSwitch } from '../ui/ThemeSwitch';
 
 export function FamilyPage({ data, reload }: { data: FamilyData; reload: () => Promise<void> }) {
   const toast = useToast();
@@ -77,6 +78,11 @@ export function FamilyPage({ data, reload }: { data: FamilyData; reload: () => P
             })}
           </ul>
         )}
+      </section>
+
+      <section className="stack" aria-labelledby="device-h">
+        <h2 id="device-h">This device</h2>
+        <ThemeSwitch />
       </section>
 
       <button className="btn wide" onClick={() => void supabase.auth.signOut()}>Sign out</button>
