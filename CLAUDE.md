@@ -41,12 +41,16 @@ design notes, decisions, previous iterations and open questions. Keep it current
   Don't build later-phase features into v1; do keep the design open for them.
 - **Data model agreed:** `docs/data-model.md` (read it before writing database code).
 - **Step 1 is live** at https://sunday-board.pages.dev with the family's TenBy12 data
-  imported. **Next:** build step 2 (dishes, meal plan, linked prep tasks); see PLAN.md §5.
+  imported, and step 2 (Plan tab: week, dishes, prep reminders, to-dos) is live.
+  **Next:** build step 3, the Plan & Shop list; see PLAN.md §5.
 
 ## The new app (`app/`)
 
 - `npm run build` (esbuild → `dist/`), `npm run typecheck`, `npm test` (unit),
-  `npm run e2e` (Playwright smoke test on phone/tablet, light/dark).
+  `npm run e2e` (Playwright: signed-out smoke test, and a signed-in walkthrough against
+  an in-memory fake Supabase in `tests/e2e/fake-supabase.mjs`; run with
+  `TZ=America/Los_Angeles`). Claude's sandbox can't reach Supabase, so this is how
+  signed-in screens get tested before the owner tries them.
 - Where npm is blocked (Claude's sandbox): `bash app/scripts/offline-deps.sh` builds
   `node_modules` from preinstalled tools + GitHub sources.
 - Code layout: `src/commands/` (every action, named), `src/logic/` (pure, unit-tested),

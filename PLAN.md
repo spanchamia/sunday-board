@@ -350,26 +350,19 @@ _Smaller ideas and follow-ups. One line each._
 
 ## 5. In progress
 
-### Build step 2: dishes, meal plan, prep tasks (next)
-- **Goal:** replace TenBy12's Meals / Meal Plan / To dos: dishes with ingredients and
-  prep steps, week view by family meal type, dish suggestions, prep tasks linked to
-  the planned meal (move meal → tasks move), simple to-dos (shared or "just me").
-- **Data:** already imported (90 dishes, 592 ingredient links, 152 planned dishes).
+### Build step 3: Plan & Shop list (next)
+- **Goal:** the weekend shopping list: one list with reasons (planned meals' fresh
+  ingredients, staples due for restock, added by hand), Have it / Bought, optional
+  Usual / Extra / Just a bit amounts, split by store, bulk "bought", learned restock
+  rhythm from purchase history, one tap "add what this dish needs".
+- **Data:** 32 current list items and 217 purchases already imported.
 - **Status:** not started.
-
-<!-- Template for an item being worked on:
-### <short title>
-- **Goal:**
-- **Approach:**
-- **Files touched:**
-- **Tests:** existing scripts to rerun / new ones added
-- **Status:**
--->
 
 ## 6. Change log
 
 | Date | Change | Commit |
 |---|---|---|
+| 2026-10-10 | **Build step 2 done:** Plan tab with Week (rolling 7 days, meals by family meal type, the day's to-dos), add-a-meal with suggestions from the family's history, prep reminders created at the right time and moved/removed with their meal, Dishes (ingredients from My Home, prep steps, how often, weekday/weekend), Meal types (order, usual time), To-dos (shared or just me). Signed-in browser test against a fake database (26 checks) | (this commit) |
 | 2026-10-10 | Appearance setting: Automatic / Light / Dark on the Family page, per device, applied before first paint | (this commit) |
 | 2026-10-10 | TenBy12 data imported into the family "Panchamia": 285 items (31 duplicates merged, 99 linked to catalogue), 29 categories, 12 stores, 547 store links, 217 purchases, 9 meal types, 90 dishes, 592 ingredients, 6 prep steps, 152 planned dishes, 32 list items, 4 to-dos | 153902b |
 | 2026-10-10 | Live at https://sunday-board.pages.dev (Cloudflare Pages builds `app/` from `main`) | — |

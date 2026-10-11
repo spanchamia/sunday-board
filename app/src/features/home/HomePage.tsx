@@ -68,14 +68,16 @@ export function HomePage({ data, reload, categoryId }: { data: FamilyData; reloa
             </div>
           )}
 
-          <div className="chips" role="list" aria-label="Categories">
+          <ul className="chips" aria-label="Categories" style={{ listStyle: 'none', margin: 0, padding: 0 }}>
             {subs.map((c) => (
-              <a key={c.id} role="listitem" className="chip" href={href('home', c.id)} style={{ textDecoration: 'none', color: 'inherit' }}>
-                {c.name}<span className="count">{counts.get(c.id) ?? 0}</span>
-              </a>
+              <li key={c.id}>
+                <a className="chip" href={href('home', c.id)} style={{ textDecoration: 'none', color: 'inherit' }}>
+                  {c.name}<span className="count">{counts.get(c.id) ?? 0}</span>
+                </a>
+              </li>
             ))}
-            <button className="chip add" onClick={() => setCategorySheet('new')}><Icon name="plus" className="" />Category</button>
-          </div>
+            <li><button className="chip add" onClick={() => setCategorySheet('new')}><Icon name="plus" />Category</button></li>
+          </ul>
 
           <ItemList items={here} onOpen={setOpenItem} emptyText={subs.length ? null : `Nothing in ${current.name} yet. Use the bar above to add things.`} />
 

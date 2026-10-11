@@ -3,6 +3,7 @@ import { FamilySetup } from '../core/FamilySetup';
 import { SignIn } from '../core/SignIn';
 import { HomePage } from '../features/home/HomePage';
 import { ComingSoon } from '../features/ComingSoon';
+import { PlanPage, type PlanView } from '../features/plan/PlanPage';
 import { Icon } from '../ui/Icon';
 import { href, useRoute, type Route } from './router';
 import { useFamily } from './useFamily';
@@ -32,7 +33,7 @@ function SignedIn({ userId, email }: { userId: string; email: string }) {
       <main className="page">
         {route.tab === 'home' && <HomePage data={data} reload={reload} categoryId={route.id} />}
         {route.tab === 'list' && <ComingSoon title="Shopping list" text="The weekend shopping list arrives in build step 3: one list with reasons, “Have it”, and a split by store." />}
-        {route.tab === 'meals' && <ComingSoon title="Meals" text="Dishes, the weekly meal plan and prep reminders arrive in build step 2." />}
+        {route.tab === 'meals' && <PlanPage family={data} view={(['dishes', 'todos'].includes(route.id ?? '') ? route.id : 'week') as PlanView} />}
         {route.tab === 'family' && <FamilyPage data={data} reload={reload} />}
       </main>
       <TabBar current={route.tab} />
@@ -44,7 +45,7 @@ function TabBar({ current }: { current: Route['tab'] }) {
   const tabs: { tab: Route['tab']; label: string; icon: string }[] = [
     { tab: 'home', label: 'My Home', icon: 'home' },
     { tab: 'list', label: 'List', icon: 'list' },
-    { tab: 'meals', label: 'Meals', icon: 'meals' },
+    { tab: 'meals', label: 'Plan', icon: 'calendar' },
     { tab: 'family', label: 'Family', icon: 'family' },
   ];
   return (

@@ -129,6 +129,8 @@ p { margin: 0; }
 .btn.danger { color: var(--chili); }
 .btn.quiet { border-color: transparent; background: transparent; color: var(--cardamom); }
 .btn.wide { width: 100%; }
+.btn svg { width: 20px; height: 20px; flex: none; }
+.btn { white-space: nowrap; }
 .btn:disabled { opacity: 0.55; cursor: default; }
 .icon-btn {
   width: var(--tap); height: var(--tap); flex: none;
@@ -243,3 +245,40 @@ dialog.sheet::backdrop { background: rgba(10, 20, 14, 0.45); }
   max-width: calc(100% - 32px);
 }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* ---------- plan ---------- */
+.segmented .seg-link {
+  min-height: 40px; display: grid; place-items: center; border-radius: 9px;
+  text-decoration: none; color: var(--ink-soft); font-weight: 700;
+}
+.segmented .seg-link[aria-current='page'] { background: var(--surface); color: var(--ink); box-shadow: 0 1px 2px rgba(0,0,0,.12); }
+.chip[aria-pressed='true'] { background: var(--cardamom); border-color: var(--cardamom); color: var(--cardamom-ink); }
+.chip[aria-pressed='true'] .count { color: inherit; }
+.day-h { font-size: 17px; margin: 0 0 var(--s2); }
+.day + .day { margin-top: var(--s5); }
+.meal-row { display: flex; align-items: baseline; gap: var(--s3); padding: var(--s2) var(--s4); min-height: 52px; }
+.meal-row + .meal-row, .meal-row + .task-row, .task-row + .task-row, .task-row + .add-row, .meal-row + .add-row { border-top: 1px solid var(--line); }
+.meal-type { width: 96px; flex: none; font-size: 14px; color: var(--ink-soft); font-weight: 700; padding-top: 8px; }
+.dish-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.dish-chip {
+  min-height: 40px; padding: 0 var(--s3); border-radius: 10px; border: 1px solid var(--line);
+  background: var(--cardamom-soft); color: var(--ink); font-weight: 700; cursor: pointer; text-align: left;
+}
+.add-row { color: var(--cardamom); font-weight: 700; min-height: 48px; }
+.add-row svg { width: 20px; height: 20px; }
+.task-row { padding: var(--s1) 0 var(--s1) var(--s4); }
+fieldset.plain { border: none; padding: 0; margin: 0; min-width: 0; }
+fieldset.plain > legend { font-size: 15px; font-weight: 700; margin-bottom: var(--s1); padding: 0; }
+fieldset.plain .hint { display: block; font-size: 14px; color: var(--ink-soft); margin-top: var(--s1); }
+.step-row { display: flex; gap: var(--s2); align-items: center; margin-bottom: var(--s2); }
+.input.amount { width: 84px; flex: none; }
+.input.unit { width: 96px; flex: none; }
+.step-row .before { color: var(--ink-soft); font-size: 15px; }
+.input.time { width: 120px; flex: none; }
+svg.up { transform: rotate(90deg); }
+@media (max-width: 420px) {
+  .step-row { flex-wrap: wrap; }
+  .step-row .grow { flex-basis: 100%; }
+  .meal-type { width: 78px; }
+}
+details > summary { cursor: pointer; min-height: 44px; display: flex; align-items: center; }
