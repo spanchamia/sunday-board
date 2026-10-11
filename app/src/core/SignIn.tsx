@@ -58,7 +58,7 @@ export function SignIn() {
           </form>
         ) : (
           <form className="stack" onSubmit={checkCode} noValidate>
-            <p>We sent an email to <strong>{sentTo}</strong>. Type the code from it here, or tap the sign-in link in the email.</p>
+            <p>We sent an email to <strong>{sentTo}</strong>. Tap the sign-in link in it, on this device and in this browser. If the email shows a code instead, type it here.</p>
             <label className="field">
               <span>Code</span>
               <input className="input code-input" inputMode="numeric" autoComplete="one-time-code" autoFocus maxLength={10}
