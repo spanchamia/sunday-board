@@ -40,8 +40,23 @@ design notes, decisions, previous iterations and open questions. Keep it current
   plus My Home items, dishes, meal plan, linked prep tasks, sync, TenBy12 import.
   Don't build later-phase features into v1; do keep the design open for them.
 - **Data model agreed:** `docs/data-model.md` (read it before writing database code).
-- **Next steps:** build step 1 (PLAN.md §3): sign-in, family, My Home + catalogue,
-  TenBy12 import.
+- **Step 1 is live** at https://sunday-board.pages.dev with the family's TenBy12 data
+  imported. **Next:** build step 2 (dishes, meal plan, linked prep tasks); see PLAN.md §5.
+
+## The new app (`app/`)
+
+- `npm run build` (esbuild → `dist/`), `npm run typecheck`, `npm test` (unit),
+  `npm run e2e` (Playwright smoke test on phone/tablet, light/dark).
+- Where npm is blocked (Claude's sandbox): `bash app/scripts/offline-deps.sh` builds
+  `node_modules` from preinstalled tools + GitHub sources.
+- Code layout: `src/commands/` (every action, named), `src/logic/` (pure, unit-tested),
+  `src/features/<module>/` (screens), `src/core/` (sign-in, family), `src/ui/`.
+- Database: migrations in `app/supabase/migrations/` (apply via the Supabase connector;
+  keep files identical to what ran), access checks in `app/supabase/tests/rls_checks.sql`
+  (run after schema changes), regenerate `src/lib/db.types.ts` after migrations.
+- Catalogue: `app/supabase/seed/build_catalog.py`; TenBy12 importer:
+  `app/supabase/import/tenby12.py` (its output contains family data: never commit).
+- Deploys: every push to `main` rebuilds Cloudflare Pages (root `app`, output `dist`).
 
 ## The existing Sunday Board code
 

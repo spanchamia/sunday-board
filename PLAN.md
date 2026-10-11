@@ -350,7 +350,12 @@ _Smaller ideas and follow-ups. One line each._
 
 ## 5. In progress
 
-_Nothing yet._
+### Build step 2: dishes, meal plan, prep tasks (next)
+- **Goal:** replace TenBy12's Meals / Meal Plan / To dos: dishes with ingredients and
+  prep steps, week view by family meal type, dish suggestions, prep tasks linked to
+  the planned meal (move meal → tasks move), simple to-dos (shared or "just me").
+- **Data:** already imported (90 dishes, 592 ingredient links, 152 planned dishes).
+- **Status:** not started.
 
 <!-- Template for an item being worked on:
 ### <short title>
@@ -365,6 +370,11 @@ _Nothing yet._
 
 | Date | Change | Commit |
 |---|---|---|
+| 2026-10-10 | TenBy12 data imported into the family "Panchamia": 285 items (31 duplicates merged, 99 linked to catalogue), 29 categories, 12 stores, 547 store links, 217 purchases, 9 meal types, 90 dishes, 592 ingredients, 6 prep steps, 152 planned dishes, 32 list items, 4 to-dos | 153902b |
+| 2026-10-10 | Live at https://sunday-board.pages.dev (Cloudflare Pages builds `app/` from `main`) | — |
+| 2026-10-10 | Catalogue loaded: 4,064 products (1,483 staples), 5 starter sets | 3501ad3, 794e7a9 |
+| 2026-10-10 | **Build step 1 done:** app skeleton (React + TS PWA, esbuild), sign-in by emailed link/code, family setup + invite code, Family page with stores, My Home (nested categories, items, "Add or find" bar, starter sets) | 25e4475 |
+| 2026-10-10 | Database: v1 schema, row-level security per family, 13 access checks passing | bd9f64c |
 | 2026-10-10 | Data model agreed | — |
 | 2026-10-10 | Added item catalogue ("universe") to v1; data model draft in `docs/data-model.md` | — |
 | 2026-10-10 | Version 1 scope agreed and locked (§3) | — |
@@ -385,6 +395,8 @@ _Nothing yet._
 
 | Date | Decision | Why |
 |---|---|---|
+| 2026-10-10 | Build with esbuild (not Vite); hash routes; no router/UI libraries | Fewer dependencies; works in Claude's sandbox (npm blocked there) and on Cloudflare (normal npm) |
+| 2026-10-10 | Sign-in uses Supabase's default emailed link for now; code-in-email needs custom SMTP (backlog B2) | Supabase only allows template edits with custom SMTP |
 | 2026-10-10 | Front end: React + TypeScript, installable web app (PWA), Supabase client, automated tests; new app lives in `app/` in this repo | Most common toolkit → Claude changes are fastest and most reliable; types catch mistakes; Flutter web was slow, Svelte less common, Next.js adds unneeded server features |
 | 2026-10-10 | Sign-in for v1: Google + email code; no Apple (needs $99/yr Apple Developer membership) | Free, covers the family; Apple can come when other families join |
 | 2026-10-10 | Hosting: Supabase project + Cloudflare Pages accounts created by the owner | — |
