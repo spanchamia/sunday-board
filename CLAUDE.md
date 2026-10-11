@@ -33,10 +33,13 @@ design notes, decisions, previous iterations and open questions. Keep it current
 - TenBy12 is in daily use by the owner's family; its Firebase export lives in
   `firebase-export/` (git-ignored, contains family data; never commit). Ignore the
   `archery_*` collections for now.
-- **Core of v1 (proposed):** the weekend "Plan & Shop" flow: one list with reasons,
-  staples vs. fresh, "Have it" pruning, learned restock cadence, split by store.
-  Generic for all household items. See PLAN.md §1a (pain points) and §3a.
-- **Next steps:** plan the import of the exported TenBy12 data; settle phase 0 (stack, data model), then phase 1.
+- **Version 1 scope is agreed (PLAN.md §3):** replace TenBy12 for the owner's family.
+  Core is the weekend "Plan & Shop" flow (one list with reasons, staples vs. fresh,
+  "Have it", optional Usual/Extra/Just a bit amounts, learned restock, split by store),
+  plus My Home items, dishes, meal plan, linked prep tasks, sync, TenBy12 import.
+  Don't build later-phase features into v1; do keep the design open for them.
+- **Next steps:** design the v1 data model (from the TenBy12 export), pick the front-end
+  toolkit, set up Supabase + Cloudflare accounts, then build step 1 (PLAN.md §3).
 
 ## The existing Sunday Board code
 

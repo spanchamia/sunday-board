@@ -188,25 +188,65 @@ npm run serve   # (other terminal) then e.g.  npm run cart / npm run planner
 | G7 | **Category hierarchy** under *My Home* (e.g. Kitchen › Pantry / Vegetables / Fruits) | Builds on the existing shelf tree; editable per family |
 | G8 | **Easy dish entry + shared dish library**; import other families' dishes and shop from them | Publish/import flow, ingredients matched to the catalogue, privacy by default |
 | G9 | **Prep tasks**: adding a dish to the plan puts its prep steps on the calendar | Dish carries prep steps with lead times; tasks linked to the meal |
-| G10 | **Delivery ordering (long-term)**: send some items to Instacart / DoorDash for delivery | Needs per-item quantities and product matching; an "ordering provider" plug-in (see §3a) |
+| G10 | **Delivery ordering (long-term)**: send some items to Instacart / DoorDash for delivery | Amounts + product matching chosen on the ordering screen (quantities optional elsewhere); an "ordering provider" plug-in (see §3a) |
+| G11 | **Talk or type in plain language (distant)**: "we're out of milk, and get extra onions for Saturday" → items added to the list, or an Instacart/DoorDash order started | An AI model turns the sentence into app actions; voice via the phone's dictation. Needs every app action exposed as a clear command (see §3a) |
 
 **Guiding principle: easy to extend.** The app should grow into more household use
 cases over time (archery logs, chores, school schedules…) without rewrites. Owner's
 motivation for iteration 3: TenBy12 is useful but changes take too long; building with
 Claude should make changes faster, so the code must stay simple and well-organised.
 
-## 3. Proposed phases (draft — to confirm)
+## 3. Version 1 — agreed scope (locked 2026-10-10)
 
-| Phase | Scope | Goals |
+**Goal:** the owner's family stops using TenBy12 and uses this instead. V1 covers
+everything they rely on today and fixes the main frustrations; everything else waits.
+Users: the owner's family only (two adults signed in).
+
+**The weekly routine v1 is built around**
+1. *Weekend breakfast — plan the week:* meal plan by day × family meal type; dish
+   suggestions (not made in a while); prep steps land on the right days automatically.
+2. *Review the list:* one list = fresh ingredients for planned dishes + staples and
+   household items due for restock + anything added in the week. Each row says why.
+   Prune with **Have it**, adjust with **Usual / Extra / Just a bit**, add extras.
+3. *Weekend shop (phone):* list split by store; tick as you go or mark the bag bought.
+4. *During the week:* today's meals and prep tasks; quick top-up adds; instant sync
+   between both phones.
+5. *Over time:* learned restock rhythm makes the list more accurate each week.
+
+**In v1**
+- **Family:** one family profile; sign-in with Google, Apple or email code.
+- **My Home:** items in nested categories (My Home › Kitchen › Vegetables…); each item:
+  staple vs. fresh, which stores carry it, optional restock rhythm and usual amount.
+- **Dishes:** ingredients, prep steps (lead times), meal types, preferred frequency;
+  one tap adds what a dish needs to the list.
+- **Meal plan:** week view, family-defined meal types, dish suggestions.
+- **Calendar & tasks:** prep tasks linked to their meal (move meal → tasks move);
+  simple to-dos, shared or "just me".
+- **Shopping:** list with reasons, Have it, optional amounts, split by store, bulk
+  "bought", learned restock rhythm.
+- **Data:** import of TenBy12 items, categories, dishes, prep steps, stores, meal types
+  and purchase history on day one.
+- **Phone-ready:** installable web app, fast, usable in-store on a weak signal.
+
+**Later (designed for, not built in v1)**
+
+| When | Scope | Goals |
 |---|---|---|
-| 0 | Decide stack, backend, rewrite vs. evolve; design data model | — |
-| 1 | Foundation: backend, sign-in, families + invites, live sync, responsive shell installable on phones (PWA), import of existing local boards | G2, G3, G4 (shell) |
-| 2 | My Home catalogue + category hierarchy; phone shopping mode | G6, G7, G4 |
-| 3 | Dishes v2: quick entry, prep steps → calendar tasks | G9, G8 (entry) |
-| 4 | Money & trips: stores, bulk sizes, stock levels, "what to buy where" | G1 |
-| 5 | Kitchen tablet view | G5 |
-| 6 | Shared dish library (publish / browse / import) | G8 |
+| v1.x | Kitchen tablet view; monthly calendar | G5 |
+| v2 | Other families sign up; invites beyond one family | G2 |
+| v2 | Shared dish library (publish / browse / import) | G8 |
 | Later | Delivery ordering via Instacart (then others) | G10 |
+| Later | Natural-language / voice assistant for the list and orders | G11 |
+| Later | More household modules (chores, archery log…) | — |
+
+**V1 is done when:** a full weekend of planning and shopping happens in the new app
+with no TenBy12; pruning the list takes seconds; screens open fast on a phone; after a
+month, restock suggestions feel about right. Then retire TenBy12 (backlog B1).
+
+**Build order for v1 (draft):** 0) data model + stack choices + accounts →
+1) sign-in, family, My Home items/categories, TenBy12 import → 2) dishes + meal plan +
+prep tasks/calendar → 3) Plan & Shop list, stores, learned restock → 4) polish, offline,
+family trial alongside TenBy12.
 
 ## 3a. Design notes (reasoning behind the plan)
 
@@ -243,8 +283,16 @@ uptime would become our job.
   its Developer Platform can turn a shopping list into a shoppable Instacart list;
   DoorDash's public APIs appear aimed at businesses, so check later). Stores and
   providers are swappable without touching the shopping module.
-- *Quantities from the start.* Delivery ordering needs amounts and units, which
-  TenBy12 never stored, so the new data model includes them even before G10.
+- *Quantities are optional.* Most families know "the usual" (e.g. 6 tomatoes), not
+  pounds. So a list row needs no amount at all; one tap sets **Usual / Extra / Just a
+  bit**; and an optional free count in the family's own unit ("6", "2 bags") can be
+  added, never converted. An item can remember its usual amount as a hint. Precise
+  amounts and product matching for delivery (G10) happen on the ordering screen.
+  Owner decision, 2026-10-08/10.
+- *Every action is a named command.* "Add item to list", "mark bought", "plan dish on
+  a day"… live in one place the screens call. A future assistant (G11), Instacart
+  hand-off or automation can then call the same commands; nothing is buried in a
+  screen.
 - *Conventions for AI-assisted development.* Small files, one folder per module,
   typed code, automated tests, and CLAUDE.md kept current, so Claude (or anyone)
   can change one feature safely.
@@ -312,6 +360,9 @@ _Nothing yet._
 
 | Date | Change | Commit |
 |---|---|---|
+| 2026-10-10 | Version 1 scope agreed and locked (§3) | — |
+| 2026-10-10 | Added G11 (natural-language / voice assistant), distant goal | — |
+| 2026-10-10 | Quantity design settled (optional, Usual/Extra/Just a bit) | — |
 | 2026-10-08 | Reviewed fcapp (iteration 1); notes in §1a | — |
 | 2026-10-08 | Owner Q&A on TenBy12 logic and pain points; purchase-history check; Plan & Shop design | — |
 | 2026-10-08 | Added G10 (delivery ordering), extensibility principle and design notes | — |
@@ -327,6 +378,8 @@ _Nothing yet._
 
 | Date | Decision | Why |
 |---|---|---|
+| 2026-10-10 | V1 = replace TenBy12 for the owner's family (scope in §3); tablet, other families, shared dishes, delivery, voice come later | Finish something the family uses daily before widening scope |
+| 2026-10-10 | Quantities optional: none / Usual·Extra·Just a bit / free count in own units; no unit conversion; exact amounts only at delivery-ordering time | Families know counts ("6 tomatoes"), not pounds; required amounts would make the list a chore |
 | 2026-10-08 | Restock/stock logic is generic across all household items (food, cleaning, toiletries…) | Owner wants a reusable foundation for more categories |
 | 2026-10-08 | Design for extensibility: shared core + feature modules + integration plug-ins | Owner wants more use cases over time and faster changes with Claude |
 | 2026-10-07 | **Fresh build**; current app kept as reference (data, nutrition maths, repeat logic, shelf tree) | Multi-user sync, backend and phone/tablet needs change the foundation |
@@ -341,6 +394,6 @@ _Nothing yet._
   later "kitchen display" device link. Keeping Firebase Auth via Supabase's third-party
   auth is possible but means two vendors; TenBy12's 4 users can simply sign in again.
 - **Data model:** move from one JSON blob per board to one row per item (needed so two people editing at once don't overwrite each other).
-- **Stock tracking depth:** simple status (plenty / low / out) or real quantities?
+- ~~**Stock tracking depth:**~~ settled: no stock counts; restock rhythm + "Have it" + optional amounts (see Decisions).
 - **Shared dishes:** import as a copy (family edits freely) or keep a link to the original? Moderation?
 - **Existing data:** do any real boards exist that need migrating?
