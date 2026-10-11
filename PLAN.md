@@ -384,6 +384,9 @@ _Nothing yet._
 
 | Date | Decision | Why |
 |---|---|---|
+| 2026-10-10 | Front end: React + TypeScript, installable web app (PWA), Supabase client, automated tests; new app lives in `app/` in this repo | Most common toolkit → Claude changes are fastest and most reliable; types catch mistakes; Flutter web was slow, Svelte less common, Next.js adds unneeded server features |
+| 2026-10-10 | Sign-in for v1: Google + email code; no Apple (needs $99/yr Apple Developer membership) | Free, covers the family; Apple can come when other families join |
+| 2026-10-10 | Hosting: Supabase project + Cloudflare Pages accounts created by the owner | — |
 | 2026-10-10 | Data model agreed (`docs/data-model.md`): shared core + meals + calendar + shopping + read-only catalogue; only "just me" to-dos are private; one family per person; several dishes per meal slot allowed | Matches how the family plans and shops |
 | 2026-10-10 | V1 = replace TenBy12 for the owner's family (scope in §3); tablet, other families, shared dishes, delivery, voice come later | Finish something the family uses daily before widening scope |
 | 2026-10-10 | Quantities optional: none / Usual·Extra·Just a bit / free count in own units; no unit conversion; exact amounts only at delivery-ordering time | Families know counts ("6 tomatoes"), not pounds; required amounts would make the list a chore |
@@ -395,8 +398,8 @@ _Nothing yet._
 
 - **Backend:** Supabase (Postgres, auth, realtime) vs. Firebase (Firestore, strong offline sync) vs. other?
 - **Hosting (proposed):** front end on Cloudflare Pages (free, static, auto-deploy from GitHub); backend on Supabase managed (free tier to start, Pro ~$25/mo once real families rely on it, since free projects pause after 7 days idle); optional custom domain ~$10–20/yr. To confirm.
-- **Sign-in (proposed):** Supabase Auth with Google + Apple sign-in, plus email one-time
-  code / magic link as a fallback (no passwords to forget). Skip SMS (per-message cost).
+- **Sign-in (decided 2026-10-10):** Supabase Auth with Google sign-in + email one-time
+  code / magic link (Apple later, $99/yr) (no passwords to forget). Skip SMS (per-message cost).
   Join a family by invite link. Kitchen tablet: signed in as a family member, or a
   later "kitchen display" device link. Keeping Firebase Auth via Supabase's third-party
   auth is possible but means two vendors; TenBy12's 4 users can simply sign in again.

@@ -24,9 +24,10 @@ design notes, decisions, previous iterations and open questions. Keep it current
 - **Decision: fresh build.** The existing Sunday Board code in this repo is a
   *reference* (ingredient/supply data, nutrition maths, repeat logic, shelf tree),
   not the foundation. See PLAN.md §3a for why.
-- **Proposed stack (not final):** installable web app (PWA); Supabase backend
-  (Postgres, auth, realtime, row-level security per family); front end hosted on
-  Cloudflare Pages. Open questions are in PLAN.md §8.
+- **Stack (decided 2026-10-10):** React + TypeScript installable web app (PWA) in
+  `app/`; Supabase backend (Postgres, auth, realtime, row-level security per family);
+  hosted on Cloudflare Pages. Sign-in: Google + email code (no Apple in v1).
+  Never commit secrets; only the Supabase URL and publishable key may appear in code.
 - **Design for extensibility:** shared core + feature modules + integration plug-ins
   (long-term: Instacart/DoorDash ordering, G10). Keep files small, one folder per
   module, typed code and tests, so changes stay quick and safe. See PLAN.md §3a.
@@ -39,8 +40,8 @@ design notes, decisions, previous iterations and open questions. Keep it current
   plus My Home items, dishes, meal plan, linked prep tasks, sync, TenBy12 import.
   Don't build later-phase features into v1; do keep the design open for them.
 - **Data model agreed:** `docs/data-model.md` (read it before writing database code).
-- **Next steps:** pick the front-end toolkit, set up Supabase + Cloudflare accounts,
-  then build step 1 (PLAN.md §3).
+- **Next steps:** build step 1 (PLAN.md §3): sign-in, family, My Home + catalogue,
+  TenBy12 import.
 
 ## The existing Sunday Board code
 
