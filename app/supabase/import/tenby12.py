@@ -229,6 +229,14 @@ def main(src, family):
             f"({q(uid('task', t['__id__']))}, {q(family)}, {q(clean(t['name']))}, {q(local_date(t['date_time']))}, {owner})"
             for t in todos) + '\non conflict do nothing;')
 
+    # Link items to catalogue products with the same name (or another name), when unambiguous.
+    out.append(f"""update public.items i set catalog_item_id = m.cid
+from (select i2.id, min(c.id::text)::uuid cid, count(*) n
+      from public.items i2 join public.catalog_items c
+        on lower(c.name) = lower(i2.name) or lower(i2.name) = any (select lower(a) from unnest(c.aliases) a)
+      where i2.family_id = {q(family)} and i2.catalog_item_id is null
+      group by i2.id) m
+where i.id = m.id and m.n = 1;""")
     out.append('commit;')
     print('\n'.join(out))
     print(f'-- {len(cat_rows)} categories, {len(store_rows)} stores, {len(item_rows)} items ({merged} duplicates merged), '
