@@ -345,7 +345,7 @@ _Smaller ideas and follow-ups. One line each._
 
 | # | Idea | Area | Notes |
 |---|---|---|---|
-| B2 | Custom SMTP (e.g. Gmail app password) so sign-in emails can carry a code and aren't rate-limited; needed before using the home-screen app day to day (links open the browser, not the app) | Sign-in | Supabase only allows template edits with custom SMTP (2026-10-10) |
+| B2 | Custom SMTP (e.g. Gmail app password) so sign-in emails can carry a code and aren't rate-limited; needed before using the home-screen app day to day (links open the browser, not the app) | Sign-in | Supabase only allows template edits with custom SMTP (2026-10-10). **2026-10-12:** owner given the steps (dedicated Gmail + app password → Supabase SMTP smtp.gmail.com:465 → Magic Link and Confirm signup templates showing `{{ .Token }}`); he'll do it himself. After it works: change the SignIn screen wording to "type the code from the email" (the app already accepts codes) |
 | B1 | Retire TenBy12 once the family has switched: delete the FlutterFlow app and its Firebase data (keep the export) | Migration | Its URL is in this repo's history (commit 902d6ac); deleting the app makes that moot |
 
 ## 5. In progress
