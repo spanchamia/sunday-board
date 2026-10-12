@@ -24,6 +24,7 @@ export function StartPage({ data, badges }: { data: FamilyData; badges: Badges |
     { key: 'list', label: 'Shopping list', icon: 'list', to: href('list'),
       sub: badges ? (badges.toBuy ? `${badges.toBuy} to buy` : 'All bought') : undefined,
       badge: badges?.toBuy ? { n: badges.toBuy, kind: 'count', label: `${badges.toBuy} to buy` } : undefined },
+    { key: 'calendar', label: 'Calendar', icon: 'calendar', to: href('calendar') },
     { key: 'stores', label: 'Stores', icon: 'stores', to: href('stores'), sub: plural(data.stores.length, 'store') },
     { key: 'home', label: 'My Home', icon: 'home', to: href('home'), sub: plural(data.items.length, 'item') },
     { key: 'todos', label: 'To-dos', icon: 'todos', to: href('todos'),

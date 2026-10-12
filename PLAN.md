@@ -361,6 +361,7 @@ _Smaller ideas and follow-ups. One line each._
 
 | Date | Change | Commit |
 |---|---|---|
+| 2026-10-11 | **Kitchen calendar (G5, brought forward at owner's request):** Calendar page with Week (each day in full: meals by meal type, prep reminders, to-dos; 7 columns on a landscape tablet) and Month (text on tablets, dots on phones; the picked day shown beside/below), tick to-dos in place, add or open meals, rolls over at midnight and syncs live. Per-device settings: "Opens on Home / Calendar" for the kitchen tablet, and hide my "Just me" to-dos on a shared screen. Reached from the launcher tile and Plan | (this commit) |
 | 2026-10-11 | Home launcher like TenBy12's: tiles for Kitchen, Dishes, Meal plan (today's dish), Shopping list (count to buy), Stores, My Home, To-dos (bell badge when due), with line icons drawn for the app. Bottom bar: Home, List, Plan, To-dos (badge), Family. To-dos and Stores got their own pages (Plan keeps Week and Dishes) | (this commit) |
 | 2026-10-11 | Whole categories as staples: items follow their category (blank setting) unless set one by one as an exception; setting a category offers a one-time "make all follow / keep exceptions" step (TenBy12 set each item separately, e.g. Spices had 53 as-needed). Item editor: Like category / Staple / As needed. Migration 0005 applied | (this commit) |
 | 2026-10-11 | **Build step 3 done:** "This week's shop" review (fresh ingredients for meals planned in the next 7 days + staples running low, with reasons; unticked staples count as Have it), learned restock rhythm (median gap between purchases, ignoring same-trip repeats; Have it stretches it and rechecks after half the rhythm; first guess 2 months after a single purchase; saved as `learned_every_days`), Have it on each row, Usual / Extra / Just a bit + optional amount + store per row, By aisle / By store, tick = in the bag (synced) and "Done shopping" records all purchases with their store. 20 unit tests, 76 browser checks | (this commit) |
@@ -392,6 +393,7 @@ _Smaller ideas and follow-ups. One line each._
 
 | Date | Decision | Why |
 |---|---|---|
+| 2026-10-11 | Calendar built in v1 (was later-phase G5); weeks start Sunday; tablet opens on it via a per-device setting rather than a separate tablet app | Owner wants it as the kitchen tablet's front page; one app, any screen |
 | 2026-10-11 | First screen is a launcher of tiles (like TenBy12), not the category list | Owner chose it over an icon grid of categories; familiar to the family, shows what needs attention at a glance |
 | 2026-10-11 | Items follow their category's staple / as-needed setting; an item's own setting is an exception | Owner: "spices – all of them should be staple by default", with overrides for some items |
 | 2026-10-11 | Restock suggestions and planned-meal ingredients come through a review sheet, not added automatically | The family's pain is pruning: a review keeps one list without rows silently reappearing after being removed |

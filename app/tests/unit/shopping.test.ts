@@ -112,3 +112,20 @@ test('items follow the nearest category setting unless they have their own', () 
   assert.deepEqual(governedItems(cats, 'sp', items).map((i) => i.id), ['cumin', 'cloves']);
   assert.deepEqual(governedItems(cats, 'kit', items).map((i) => i.id), ['rice']);
 });
+
+import { addMonths, monthGrid, weekDays, weekStart } from '../../src/logic/calendar.ts';
+
+test('calendar: weeks start Sunday, months cover whole weeks, month maths clamps', () => {
+  assert.equal(weekStart('2026-10-14'), '2026-10-11');
+  assert.equal(weekStart('2026-10-11'), '2026-10-11');
+  assert.deepEqual(weekDays('2026-10-31'), ['2026-10-25', '2026-10-26', '2026-10-27', '2026-10-28', '2026-10-29', '2026-10-30', '2026-10-31']);
+  const oct = monthGrid('2026-10-11');
+  assert.equal(oct.length, 5);
+  assert.equal(oct[0]![0], '2026-09-27');
+  assert.equal(oct.at(-1)!.at(-1), '2026-10-31');
+  assert.equal(monthGrid('2026-11-05').length, 5);      // Nov 1 2026 is a Sunday
+  assert.equal(monthGrid('2026-08-01').length, 6);      // Aug 2026 spans 6 rows
+  assert.equal(addMonths('2027-01-31', 1), '2027-02-28');
+  assert.equal(addMonths('2026-10-11', -1), '2026-09-11');
+  assert.equal(addMonths('2026-12-15', 1), '2027-01-15');
+});

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { today } from '../logic/dates';
+import { readHidePrivate } from '../lib/device';
 
 export interface Badges {
   toBuy: number;      // open rows on the shopping list
@@ -16,7 +17,9 @@ export function useBadges(familyId: string): Badges | null {
     const t = today();
     const [list, todos, meals] = await Promise.all([
       supabase.from('list_entries').select('id', { count: 'exact', head: true }).eq('family_id', familyId).eq('status', 'to_buy'),
-      supabase.from('tasks').select('id', { count: 'exact', head: true }).eq('family_id', familyId).is('done_at', null).lte('due_on', t),
+      readHidePrivate()
+        ? supabase.from('tasks').select('id', { count: 'exact', head: true }).eq('family_id', familyId).is('done_at', null).lte('due_on', t).eq('visibility', 'family')
+        : supabase.from('tasks').select('id', { count: 'exact', head: true }).eq('family_id', familyId).is('done_at', null).lte('due_on', t),
       supabase.from('planned_meals').select('dish_id').eq('family_id', familyId).eq('date', t),
     ]);
     const dishIds = [...new Set((meals.data ?? []).flatMap((m) => (m.dish_id ? [m.dish_id] : [])))];

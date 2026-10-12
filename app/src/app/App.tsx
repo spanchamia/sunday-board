@@ -1,6 +1,7 @@
 import { FamilyPage } from '../core/FamilyPage';
 import { FamilySetup } from '../core/FamilySetup';
 import { SignIn } from '../core/SignIn';
+import { CalendarPage } from '../features/calendar/CalendarPage';
 import { HomePage } from '../features/home/HomePage';
 import { PlanPage, type PlanView } from '../features/plan/PlanPage';
 import { ListPage } from '../features/list/ListPage';
@@ -39,11 +40,12 @@ function Ready({ data, reload, route }: { data: FamilyData; reload: () => Promis
   const badges = useBadges(data.family.id);
   return (
     <div className="app">
-      <main className="page">
+      <main className={`page${route.tab === 'calendar' ? ' wide' : ''}`}>
         {route.tab === 'start' && <StartPage data={data} badges={badges} />}
         {route.tab === 'home' && <HomePage data={data} reload={reload} categoryId={route.id} />}
         {route.tab === 'list' && <ListPage family={data} reloadFamily={reload} />}
         {route.tab === 'meals' && <PlanPage family={data} view={(route.id === 'dishes' ? 'dishes' : 'week') as PlanView} />}
+        {route.tab === 'calendar' && <CalendarPage family={data} viewParam={route.id} />}
         {route.tab === 'todos' && <TodosPage family={data} />}
         {route.tab === 'stores' && <StoresPage data={data} reload={reload} />}
         {route.tab === 'family' && <FamilyPage data={data} />}
@@ -62,11 +64,11 @@ function TabBar({ current, badges }: { current: Route['tab']; badges: Badges | n
     { tab: 'family', label: 'Family', icon: 'family' },
   ];
   // My Home and Stores are reached from the launcher, so they light up Home.
-  const lit = current === 'home' || current === 'stores' ? 'start' : current;
+  const lit = current === 'home' || current === 'stores' ? 'start' : current === 'calendar' ? 'meals' : current;
   return (
     <nav className="tabbar" aria-label="Main">
       {tabs.map((t) => (
-        <a key={t.tab} href={t.tab === 'start' ? '#/' : href(t.tab)} aria-current={lit === t.tab ? 'page' : undefined}>
+        <a key={t.tab} href={href(t.tab)} aria-current={lit === t.tab ? 'page' : undefined}>
           <Icon name={t.icon} />{t.label}
           {!!t.badge && <span className="tab-badge" aria-label={`${t.badge} due`}>{t.badge}</span>}
         </a>

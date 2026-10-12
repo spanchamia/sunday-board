@@ -18,6 +18,12 @@ const drawings: Record<string, string[]> = {
     'M10 14h44v40H10z', 'M10 24h44', 'M20 9v9M44 9v9',
     'M32 49a9.5 9.5 0 1 0 0-19 9.5 9.5 0 0 0 0 19z', 'M32 34v5.5l4 2.5',
   ],
+  calendar: [
+    'M8 12h48v44H8z', 'M8 22h48', 'M18 7v9M46 7v9',
+    'M16 30h6v5h-6zM29 30h6v5h-6zM42 30h6v5h-6z',
+    'M16 42h6v5h-6zM42 42h6v5h-6z', 'M29 42h6v5h-6z',
+    'M30 44l2 2 3.5-3.5',
+  ],
   list: [
     'M14 9h30v46H14z', 'M23 9v-2h12v2',
     'M19 18h6v6h-6zM20.5 21l1.5 1.5 3-3.5', 'M30 21h9',

@@ -367,6 +367,59 @@ for (const scheme of ['light', 'dark']) {
   await page.close();
 }
 
+// 9. Calendar: kitchen tablet week view, month view, phone, and this-device settings
+{
+  const { page, data, writes, errors } = await open();
+  data.tasks.push({ id: 't-prep', family_id: F, title: 'Soak dal', due_on: day(0), due_time: '17:00:00', done_at: null,
+    visibility: 'family', owner_id: USER.id, planned_meal_id: 'pm-1', prep_step_id: null });
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.goto(`${base}/#/calendar`);
+  const todayCol = page.getByRole('region', { name: /^Today,/ });
+  await todayCol.getByRole('button', { name: 'Dal rice' }).waitFor();
+  check(await todayCol.getByText('Soak dal').isVisible() && await todayCol.getByText('Call plumber').isVisible(), 'week: today shows the dish, prep reminder and to-do');
+  const boxes = await page.locator('.cal-day').evaluateAll((els) => els.map((e) => e.getBoundingClientRect().top));
+  check(boxes.length === 7 && boxes.every((y) => y === boxes[0]), 'tablet week: 7 days side by side');
+  await shot(page, 'calendar-week-tablet');
+  await todayCol.getByLabel('Call plumber', { exact: true }).click();
+  await todayCol.getByLabel('Call plumber, done').waitFor();
+  check(writes.some((w) => w.table === 'tasks' && w.method === 'PATCH' && w.patch.done_at), 'ticking a to-do on the calendar marks it done');
+
+  await page.getByRole('button', { name: 'Month' }).click();
+  await page.locator('.cal-cell.is-today .cal-line', { hasText: 'Dal rice' }).waitFor();
+  check(true, 'month: today’s cell lists Dal rice');
+  check(await page.getByRole('region', { name: /^Today,/ }).getByText('Soak dal').isVisible(), 'month: the picked day (today) is shown in full below');
+  await shot(page, 'calendar-month-tablet');
+  const later = page.locator('.cal-cell:not(.out)').last();
+  await later.click();
+  check(await later.getAttribute('aria-selected') === 'true', 'tapping a day picks it');
+  await page.getByRole('button', { name: 'Next month' }).click();
+  await page.getByRole('button', { name: 'Today' }).click();
+  await page.locator('.cal-cell.is-today').waitFor();
+  check(true, 'Today brings the month back');
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  check(await page.locator('.cal-cell.is-today .cal-dots i').first().isVisible(), 'phone month: days show dots');
+  const overflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth);
+  check(!overflow, 'phone calendar: no sideways scrolling');
+  await shot(page, 'calendar-month-phone');
+
+  await page.goto(`${base}/#/family`);
+  await page.getByRole('group', { name: 'Opens on' }).getByRole('button', { name: 'Calendar' }).click();
+  await page.getByLabel(/Hide my “Just me” to-dos/).check();
+  await page.goto(`${base}/`);
+  await page.reload();
+  await page.locator('.cal-title').waitFor();
+  check(await page.getByRole('button', { name: 'Week' }).isVisible(), 'this device now opens on the calendar');
+  await page.getByRole('button', { name: 'Week' }).click();
+  await page.getByRole('region', { name: /^Today,/ }).getByRole('button', { name: 'Dal rice' }).waitFor();
+  check(!(await page.getByText('Call plumber').isVisible()), '“Just me” to-dos hidden on this device');
+  await page.locator('.tabbar').getByRole('link', { name: 'Home' }).click();
+  await page.getByRole('heading', { name: 'Panchamia' }).waitFor();
+  check(await page.getByRole('link', { name: /^Calendar/ }).isVisible(), 'Home tab still reaches the launcher, with a Calendar tile');
+  check(errors.length === 0, `calendar: no script errors ${errors.join('; ')}`);
+  await page.close();
+}
+
 await browser.close();
 server.close();
 if (failures) { console.error(`${failures} check(s) failed`); process.exit(1); }

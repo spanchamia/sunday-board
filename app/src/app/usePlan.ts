@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import type { Dish, DishIngredient, DishMealType, MealType, PlannedMeal, PrepStep, Task } from '../lib/types';
 import { addDays, today } from '../logic/dates';
+import { readHidePrivate } from '../lib/device';
 
 export interface PlanData {
   mealTypes: MealType[];
@@ -40,7 +41,9 @@ async function load(familyId: string): Promise<PlanData> {
   if (err) throw err;
   return {
     mealTypes: mt.data ?? [], dishes: d.data ?? [], dishMealTypes: dmt.data ?? [], ingredients: ing.data ?? [],
-    prepSteps: steps.data ?? [], planned: pm.data ?? [], tasks: tasks.data ?? [],
+    prepSteps: steps.data ?? [], planned: pm.data ?? [],
+    // A shared kitchen screen can hide the signed-in person's "Just me" to-dos.
+    tasks: (tasks.data ?? []).filter((t) => !(readHidePrivate() && t.visibility === 'private')),
   };
 }
 

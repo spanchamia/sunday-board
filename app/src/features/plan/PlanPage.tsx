@@ -19,6 +19,7 @@ export function PlanPage({ family, view }: { family: FamilyData; view: PlanView 
           <a key={x.v} href={href('meals', x.v === 'week' ? null : x.v)} aria-current={view === x.v ? 'page' : undefined}
             className="seg-link">{x.label}</a>
         ))}
+        <a href={href('calendar')} className="seg-link">Calendar</a>
       </nav>
       {plan.error && (
         <div className="notice stack">
