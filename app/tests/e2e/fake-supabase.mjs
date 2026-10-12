@@ -57,6 +57,11 @@ export async function installFake(page, db) {
     if (table.startsWith('rpc/')) return json(200, []);
     db[table] ??= [];
     const method = req.method();
+    if (method === 'HEAD') {
+      // count-only requests ({ count: 'exact', head: true })
+      const n = db[table].filter((r) => matches(r, params)).length;
+      return route.fulfill({ status: 200, headers: { 'content-range': `*/${n}`, 'access-control-expose-headers': 'content-range' }, body: '' });
+    }
     if (method === 'GET') {
       let rows = db[table].filter((r) => matches(r, params));
       // embedded select like catalog_items(*) is not needed by these tests

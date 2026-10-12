@@ -18,6 +18,8 @@ const paths: Record<string, string> = {
   trash: 'M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3',
   cart: 'M3 4h2l2.4 11h10.2L20 7H6.2M9.5 20a1 1 0 1 0 0-.01M17 20a1 1 0 1 0 0-.01',
   share: 'M12 4v11M7 9l5-5 5 5M5 14v5h14v-5',
+  bell: 'M6 16.5h12l-1.6-2.2V10a4.4 4.4 0 0 0-8.8 0v4.3zM10 19.5a2 2 0 0 0 4 0',
+  todos: 'M8 6h11v15H8zM5 4v14M11 11l1.5 1.5L15.5 9M11 17h5',
 };
 
 export function Icon({ name, label, className }: { name: keyof typeof paths | string; label?: string; className?: string }) {

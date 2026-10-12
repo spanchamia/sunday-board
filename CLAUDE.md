@@ -54,6 +54,8 @@ design notes, decisions, previous iterations and open questions. Keep it current
   signed-in screens get tested before the owner tries them.
 - Where npm is blocked (Claude's sandbox): `bash app/scripts/offline-deps.sh` builds
   `node_modules` from preinstalled tools + GitHub sources.
+- Screens: `#/` launcher (Home tab), `#/home` My Home, `#/list`, `#/meals[/dishes]`, `#/todos`,
+  `#/stores`, `#/family`; routes in `src/app/router.ts`.
 - Code layout: `src/commands/` (every action, named), `src/logic/` (pure, unit-tested),
   `src/features/<module>/` (screens), `src/core/` (sign-in, family), `src/ui/`.
 - Database: migrations in `app/supabase/migrations/` (apply via the Supabase connector;

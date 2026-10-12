@@ -4,9 +4,13 @@ import { SignIn } from '../core/SignIn';
 import { HomePage } from '../features/home/HomePage';
 import { PlanPage, type PlanView } from '../features/plan/PlanPage';
 import { ListPage } from '../features/list/ListPage';
+import { StartPage } from '../features/start/StartPage';
+import { StoresPage } from '../features/stores/StoresPage';
+import { TodosPage } from '../features/todos/TodosPage';
 import { Icon } from '../ui/Icon';
 import { href, useRoute, type Route } from './router';
-import { useFamily } from './useFamily';
+import { useBadges, type Badges } from './useBadges';
+import { useFamily, type FamilyData } from './useFamily';
 import { useSession } from './useSession';
 
 export function App() {
@@ -19,6 +23,7 @@ export function App() {
 function SignedIn({ userId, email }: { userId: string; email: string }) {
   const { state, reload } = useFamily(userId);
   const route = useRoute();
+  const familyId = state.status === 'ready' ? state.data.family.id : null;
   if (state.status === 'loading') return <Splash />;
   if (state.status === 'error') return (
     <main className="center-page"><div className="narrow stack">
@@ -27,32 +32,43 @@ function SignedIn({ userId, email }: { userId: string; email: string }) {
     </div></main>
   );
   if (state.status === 'no-family') return <FamilySetup email={email} onDone={() => void reload()} />;
-  const { data } = state;
+  return <Ready data={state.data} reload={reload} route={route} key={familyId} />;
+}
+
+function Ready({ data, reload, route }: { data: FamilyData; reload: () => Promise<void>; route: Route }) {
+  const badges = useBadges(data.family.id);
   return (
     <div className="app">
       <main className="page">
+        {route.tab === 'start' && <StartPage data={data} badges={badges} />}
         {route.tab === 'home' && <HomePage data={data} reload={reload} categoryId={route.id} />}
         {route.tab === 'list' && <ListPage family={data} reloadFamily={reload} />}
-        {route.tab === 'meals' && <PlanPage family={data} view={(['dishes', 'todos'].includes(route.id ?? '') ? route.id : 'week') as PlanView} />}
-        {route.tab === 'family' && <FamilyPage data={data} reload={reload} />}
+        {route.tab === 'meals' && <PlanPage family={data} view={(route.id === 'dishes' ? 'dishes' : 'week') as PlanView} />}
+        {route.tab === 'todos' && <TodosPage family={data} />}
+        {route.tab === 'stores' && <StoresPage data={data} reload={reload} />}
+        {route.tab === 'family' && <FamilyPage data={data} />}
       </main>
-      <TabBar current={route.tab} />
+      <TabBar current={route.tab} badges={badges} />
     </div>
   );
 }
 
-function TabBar({ current }: { current: Route['tab'] }) {
-  const tabs: { tab: Route['tab']; label: string; icon: string }[] = [
-    { tab: 'home', label: 'My Home', icon: 'home' },
+function TabBar({ current, badges }: { current: Route['tab']; badges: Badges | null }) {
+  const tabs: { tab: Route['tab']; label: string; icon: string; badge?: number }[] = [
+    { tab: 'start', label: 'Home', icon: 'home' },
     { tab: 'list', label: 'List', icon: 'list' },
     { tab: 'meals', label: 'Plan', icon: 'calendar' },
+    { tab: 'todos', label: 'To-dos', icon: 'todos', badge: badges?.todosDue },
     { tab: 'family', label: 'Family', icon: 'family' },
   ];
+  // My Home and Stores are reached from the launcher, so they light up Home.
+  const lit = current === 'home' || current === 'stores' ? 'start' : current;
   return (
     <nav className="tabbar" aria-label="Main">
       {tabs.map((t) => (
-        <a key={t.tab} href={href(t.tab)} aria-current={current === t.tab ? 'page' : undefined}>
+        <a key={t.tab} href={t.tab === 'start' ? '#/' : href(t.tab)} aria-current={lit === t.tab ? 'page' : undefined}>
           <Icon name={t.icon} />{t.label}
+          {!!t.badge && <span className="tab-badge" aria-label={`${t.badge} due`}>{t.badge}</span>}
         </a>
       ))}
     </nav>

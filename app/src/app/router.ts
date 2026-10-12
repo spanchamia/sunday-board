@@ -1,15 +1,17 @@
 import { useEffect, useState } from 'react';
 
 // Hash routes keep hosting simple (no server rewrites) and work offline:
-//   #/home            My Home top
-//   #/home/<categoryId>
-//   #/list  #/meals  #/family
-export interface Route { tab: 'home' | 'list' | 'meals' | 'family'; id: string | null }
+//   #/  (or #/start)   the launcher: big tiles for every part of the app
+//   #/home             My Home top;  #/home/<categoryId>
+//   #/list  #/meals[/dishes]  #/todos  #/stores  #/family
+export interface Route { tab: 'start' | 'home' | 'list' | 'meals' | 'todos' | 'stores' | 'family'; id: string | null }
 
 export function parseHash(hash: string): Route {
   const [tab, id] = hash.replace(/^#\/?/, '').split('/');
-  const tabs = ['home', 'list', 'meals', 'family'] as const;
-  const t = (tabs as readonly string[]).includes(tab ?? '') ? (tab as Route['tab']) : 'home';
+  // Old links to the to-dos inside Plan still work.
+  if (tab === 'meals' && id === 'todos') return { tab: 'todos', id: null };
+  const tabs = ['start', 'home', 'list', 'meals', 'todos', 'stores', 'family'] as const;
+  const t = (tabs as readonly string[]).includes(tab ?? '') ? (tab as Route['tab']) : 'start';
   return { tab: t, id: id ? decodeURIComponent(id) : null };
 }
 

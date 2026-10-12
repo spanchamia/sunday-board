@@ -339,6 +339,34 @@ for (const scheme of ['light', 'dark']) {
   await page.close();
 }
 
+// 8. The launcher (Home tab): tiles with counts, the to-dos badge, and new tabs
+{
+  const { page, errors } = await open();
+  await page.goto(`${base}/`);
+  await page.getByRole('heading', { name: 'Panchamia' }).waitFor();
+  const tile = (name) => page.getByRole('link', { name });
+  check(await tile('Kitchen: 5 items').isVisible(), 'Kitchen tile counts its items');
+  await tile(/^Shopping list: 1 to buy/).waitFor();
+  check(true, 'Shopping list tile shows 1 to buy');
+  check(await tile('Meal plan: Today: Dal rice').isVisible(), 'Meal plan tile shows today’s dish');
+  check(await tile('To-dos: 1 due').isVisible(), 'To-dos tile shows what is due');
+  check(await page.locator('.tabbar .tab-badge').textContent() === '1', 'To-dos tab shows a badge');
+  check(await page.getByRole('link', { name: 'Home', exact: true }).getAttribute('aria-current') === 'page', 'Home tab is lit');
+  await shot(page, 'launcher');
+  await tile(/^Stores/).click();
+  await page.getByRole('heading', { name: 'Stores' }).waitFor();
+  check(await page.getByRole('button', { name: /Costco/ }).isVisible(), 'Stores page lists Costco');
+  await page.locator('.tabbar').getByRole('link', { name: /To-dos/ }).click();
+  await page.getByRole('heading', { name: 'To-dos' }).waitFor();
+  check(await page.getByText('Call plumber').isVisible(), 'To-dos tab shows the to-do');
+  await page.goto(`${base}/#/meals`);
+  check(!(await page.getByRole('link', { name: 'To-dos', exact: true }).first().evaluate((a) => !!a.closest('.segmented')).catch(() => false)), 'Plan no longer has a To-dos view');
+  check(errors.length === 0, `launcher: no script errors ${errors.join('; ')}`);
+  const overflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth);
+  check(!overflow, 'launcher: no sideways scrolling');
+  await page.close();
+}
+
 await browser.close();
 server.close();
 if (failures) { console.error(`${failures} check(s) failed`); process.exit(1); }
