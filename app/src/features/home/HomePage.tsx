@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import type { FamilyData } from '../../app/useFamily';
+import type { FamilyData, HomeItem } from '../../app/useFamily';
 import { href } from '../../app/router';
 import type { Category, Item } from '../../lib/types';
 import { childrenOf, descendantIds, pathTo, rootOf } from '../../logic/tree';
@@ -108,7 +108,7 @@ export function HomePage({ data, reload, categoryId }: { data: FamilyData; reloa
   );
 }
 
-export function ItemList({ items, onOpen, emptyText }: { items: Item[]; onOpen: (i: Item) => void; emptyText: string | null }) {
+export function ItemList({ items, onOpen, emptyText }: { items: HomeItem[]; onOpen: (i: Item) => void; emptyText: string | null }) {
   if (!items.length) return emptyText ? <p className="soft empty">{emptyText}</p> : null;
   return (
     <ul className="list panel">
@@ -119,7 +119,7 @@ export function ItemList({ items, onOpen, emptyText }: { items: Item[]; onOpen: 
               {i.name}
               {i.usual_amount && <span className="meta" style={{ display: 'block' }}>Usually {i.usual_amount}</span>}
             </span>
-            {i.restock_mode === 'staple' && <span className="staple">Staple</span>}
+            {i.mode === 'staple' && <span className="staple">Staple</span>}
             <Icon name="chev" className="chev" />
           </button>
         </li>

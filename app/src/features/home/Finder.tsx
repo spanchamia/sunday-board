@@ -97,7 +97,7 @@ export function Finder({ data, onOpenItem, onNewItem, onSearchingChange, reload 
                           {pathTo(data.categories, i.category_id).slice(1).map((c) => c.name).join(' › ') || 'Not in a category'}
                         </span>
                       </span>
-                      {i.restock_mode === 'staple' && <span className="staple">Staple</span>}
+                      {i.mode === 'staple' && <span className="staple">Staple</span>}
                     </button>
                   </li>
                 ))}

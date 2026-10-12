@@ -299,6 +299,46 @@ for (const scheme of ['light', 'dark']) {
   await page.close();
 }
 
+// 7. A whole category as staples, with exceptions
+{
+  const { page, data, writes, errors } = await open();
+  data.categories.push({ id: 'c-sp', family_id: F, parent_id: 'c-kit', name: 'Spices', sort: 2, default_restock_mode: null });
+  data.items.push(
+    { id: 'i-cumin', family_id: F, category_id: 'c-sp', name: 'Cumin', restock_mode: 'staple', archived_at: null },
+    { id: 'i-hing', family_id: F, category_id: 'c-sp', name: 'Hing', restock_mode: 'as_needed', archived_at: null },
+    { id: 'i-methi', family_id: F, category_id: 'c-sp', name: 'Kasuri methi', restock_mode: 'as_needed', archived_at: null },
+  );
+  await page.goto(`${base}/#/home/c-sp`);
+  await page.getByRole('heading', { name: 'Spices' }).waitFor();
+  check(await page.locator('.staple').count() === 1, 'before: only Cumin shows as a staple');
+  await page.getByRole('button', { name: 'Edit Spices' }).click();
+  const sheet = page.getByRole('dialog');
+  await sheet.getByRole('button', { name: 'Staples' }).click();
+  await sheet.getByRole('button', { name: 'Save' }).click();
+  await sheet.getByText('2 items were set to').waitFor();
+  check(data.categories.find((c) => c.id === 'c-sp')?.default_restock_mode === 'staple', 'Spices saved as staples');
+  check(data.items.find((i) => i.id === 'i-cumin')?.restock_mode === null, 'Cumin (already a staple) now just follows Spices');
+  await shot(page, 'category-cleanup');
+  await sheet.getByRole('button', { name: 'Make all 3 staples' }).click();
+  await page.getByRole('status').filter({ hasText: 'All 3 items in Spices are staples' }).waitFor();
+  check(data.items.filter((i) => i.category_id === 'c-sp').every((i) => i.restock_mode === null), 'all three follow Spices');
+  await page.waitForFunction(() => document.querySelectorAll('.staple').length === 3);
+  check(true, 'all three show as staples');
+
+  await page.getByRole('button', { name: /^Kasuri methi/ }).click();
+  check(await sheet.getByRole('button', { name: 'Like category' }).getAttribute('aria-pressed') === 'true', 'item editor: Like category is chosen');
+  check(await sheet.getByText('A staple, like everything in Spices.').isVisible(), 'item editor explains where it comes from');
+  await sheet.getByRole('button', { name: 'As needed' }).click();
+  check(await sheet.getByText('An exception: Spices items are usually staples.').isVisible(), 'choosing As needed is shown as an exception');
+  await sheet.getByRole('button', { name: 'Save' }).click();
+  await page.getByRole('status').filter({ hasText: 'Saved' }).waitFor();
+  check(data.items.find((i) => i.id === 'i-methi')?.restock_mode === 'as_needed', 'Kasuri methi saved as an exception');
+  await page.waitForFunction(() => document.querySelectorAll('.staple').length === 2);
+  check(true, 'Kasuri methi no longer shows as a staple');
+  check(errors.length === 0, `categories: no script errors ${errors.join('; ')}`);
+  await page.close();
+}
+
 await browser.close();
 server.close();
 if (failures) { console.error(`${failures} check(s) failed`); process.exit(1); }

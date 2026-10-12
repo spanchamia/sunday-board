@@ -68,9 +68,9 @@ export type Database = {
         Relationships: []
       }
       items: {
-        Row: { archived_at: string | null; catalog_item_id: string | null; category_id: string | null; created_at: string; family_id: string; id: string; learned_every_days: number | null; name: string; notes: string; restock_every_days: number | null; restock_mode: string; updated_at: string; usual_amount: string | null }
-        Insert: { archived_at?: string | null; catalog_item_id?: string | null; category_id?: string | null; created_at?: string; family_id: string; id?: string; learned_every_days?: number | null; name: string; notes?: string; restock_every_days?: number | null; restock_mode?: string; updated_at?: string; usual_amount?: string | null }
-        Update: { archived_at?: string | null; catalog_item_id?: string | null; category_id?: string | null; created_at?: string; family_id?: string; id?: string; learned_every_days?: number | null; name?: string; notes?: string; restock_every_days?: number | null; restock_mode?: string; updated_at?: string; usual_amount?: string | null }
+        Row: { archived_at: string | null; catalog_item_id: string | null; category_id: string | null; created_at: string; family_id: string; id: string; learned_every_days: number | null; name: string; notes: string; restock_every_days: number | null; restock_mode: string | null; updated_at: string; usual_amount: string | null }
+        Insert: { archived_at?: string | null; catalog_item_id?: string | null; category_id?: string | null; created_at?: string; family_id: string; id?: string; learned_every_days?: number | null; name: string; notes?: string; restock_every_days?: number | null; restock_mode?: string | null; updated_at?: string; usual_amount?: string | null }
+        Update: { archived_at?: string | null; catalog_item_id?: string | null; category_id?: string | null; created_at?: string; family_id?: string; id?: string; learned_every_days?: number | null; name?: string; notes?: string; restock_every_days?: number | null; restock_mode?: string | null; updated_at?: string; usual_amount?: string | null }
         Relationships: []
       }
       list_entries: {

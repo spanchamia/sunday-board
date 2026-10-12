@@ -6,7 +6,7 @@ export interface NewItem {
   familyId: string;
   name: string;
   categoryId: string | null;
-  restockMode: RestockMode;
+  restockMode: RestockMode | null;   // null = same as its category
   catalogItemId?: string | null;
   restockEveryDays?: number | null;
   usualAmount?: string | null;
@@ -53,4 +53,12 @@ export async function setItemStores(familyId: string, itemId: string, storeIds: 
     .from('item_stores')
     .insert(storeIds.map((store_id) => ({ family_id: familyId, item_id: itemId, store_id })));
   if (error) throw error;
+}
+
+/** Let these items follow their category again (clears their own staple / as-needed setting). */
+export async function followCategory(itemIds: readonly string[]): Promise<void> {
+  for (let i = 0; i < itemIds.length; i += 100) {
+    const u = await supabase.from('items').update({ restock_mode: null }).in('id', itemIds.slice(i, i + 100));
+    if (u.error) throw u.error;
+  }
 }

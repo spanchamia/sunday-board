@@ -57,7 +57,7 @@ export function ListPage({ family, reloadFamily }: { family: FamilyData; reloadF
     if (!data) return [];
     const listed = new Map<string, { reason: string; planned_meal_id: string | null }[]>();
     for (const e of data.entries) listed.set(e.item_id, data.reasons.filter((r) => r.entry_id === e.id));
-    const live = family.items.filter((i) => !i.archived_at);
+    const live = family.items.filter((i) => !i.archived_at).map((i) => ({ ...i, restock_mode: i.mode }));
     return buildSuggestions({
       items: live, planned: data.week, ingredientsOfDish: data.ingredientsOfDish, listed,
       due: dueStaples(live, data.events, today()),
@@ -103,7 +103,7 @@ export function ListPage({ family, reloadFamily }: { family: FamilyData; reloadF
   }
   async function addNew() {
     try {
-      const item = await addItem({ familyId: family.family.id, name: query, categoryId: null, restockMode: 'as_needed' });
+      const item = await addItem({ familyId: family.family.id, name: query, categoryId: null, restockMode: null });
       await reloadFamily();
       await add(item);
     } catch (e) { toast(explain(e as Error)); }

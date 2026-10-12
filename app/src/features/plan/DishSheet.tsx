@@ -45,8 +45,8 @@ export function DishSheet({ family, data, index, dish, initialName = '', initial
 
   async function addNewItem() {
     try {
-      const item = await addItem({ familyId: family.family.id, name: ingQ, categoryId: null, restockMode: 'as_needed' });
-      setExtraItems([...extraItems, item]);
+      const item = await addItem({ familyId: family.family.id, name: ingQ, categoryId: null, restockMode: null });
+      setExtraItems([...extraItems, { ...item, mode: 'as_needed' }]);
       setIngredients([...ingredients, { itemId: item.id, amount: null }]);
       setIngQ('');
       toast(`${item.name} added to My Home (file it in a category later)`);

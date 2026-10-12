@@ -21,7 +21,7 @@ export function AddDishNeedsSheet({ family, dishName, itemIds, reason, onClose, 
 
   useEffect(() => {
     const byId = new Map(family.items.map((i) => [i.id, i]));
-    const ings = itemIds.flatMap((id) => { const it = byId.get(id); return it ? [{ itemId: id, name: it.name, staple: it.restock_mode === 'staple' }] : []; });
+    const ings = itemIds.flatMap((id) => { const it = byId.get(id); return it ? [{ itemId: id, name: it.name, staple: it.mode === 'staple' }] : []; });
     supabase.from('list_entries').select('item_id').eq('family_id', family.family.id).in('status', ['to_buy', 'in_bag']).then(({ data, error: e }) => {
       if (e) setError(explain(e));
       setChoices(defaultChoices(ings, new Set((data ?? []).map((r) => r.item_id))));

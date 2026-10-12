@@ -20,8 +20,9 @@ itself only lets members of that family read or change those rows.
 - **Restock mode** replaces "staple vs. fresh" and works for any item:
   *Staple*: restocked on a rhythm (spices, rice, detergent, toilet paper).
   *As needed*: bought for a reason (vegetables for a planned dish).
-  A category sets the default (Spices → Staple, Vegetables → As needed); an item can
-  override it.
+  A category sets the default (Spices → Staple, Vegetables → As needed), inherited by
+  sub-categories; an item follows it (`items.restock_mode` blank) unless it has its own
+  setting, which is an exception (migration 0005).
 - **Rhythm** = learned rhythm if there is enough history, else the family's setting,
   else a default for the category. Learned rhythm = typical gap between recent
   purchases, nudged by "Have it" taps.

@@ -361,6 +361,7 @@ _Smaller ideas and follow-ups. One line each._
 
 | Date | Change | Commit |
 |---|---|---|
+| 2026-10-11 | Whole categories as staples: items follow their category (blank setting) unless set one by one as an exception; setting a category offers a one-time "make all follow / keep exceptions" step (TenBy12 set each item separately, e.g. Spices had 53 as-needed). Item editor: Like category / Staple / As needed. Migration 0005 applied | (this commit) |
 | 2026-10-11 | **Build step 3 done:** "This week's shop" review (fresh ingredients for meals planned in the next 7 days + staples running low, with reasons; unticked staples count as Have it), learned restock rhythm (median gap between purchases, ignoring same-trip repeats; Have it stretches it and rechecks after half the rhythm; first guess 2 months after a single purchase; saved as `learned_every_days`), Have it on each row, Usual / Extra / Just a bit + optional amount + store per row, By aisle / By store, tick = in the bag (synced) and "Done shopping" records all purchases with their store. 20 unit tests, 76 browser checks | (this commit) |
 | 2026-10-10 | "Add to list" from a dish (Dishes row cart, dish editor, planned meal) and a basic List tab | (this commit) |
 | 2026-10-10 | **Build step 2 done:** Plan tab with Week (rolling 7 days, meals by family meal type, the day's to-dos), add-a-meal with suggestions from the family's history, prep reminders created at the right time and moved/removed with their meal, Dishes (ingredients from My Home, prep steps, how often, weekday/weekend), Meal types (order, usual time), To-dos (shared or just me). Signed-in browser test against a fake database (26 checks) | (this commit) |
@@ -390,6 +391,7 @@ _Smaller ideas and follow-ups. One line each._
 
 | Date | Decision | Why |
 |---|---|---|
+| 2026-10-11 | Items follow their category's staple / as-needed setting; an item's own setting is an exception | Owner: "spices – all of them should be staple by default", with overrides for some items |
 | 2026-10-11 | Restock suggestions and planned-meal ingredients come through a review sheet, not added automatically | The family's pain is pruning: a review keeps one list without rows silently reappearing after being removed |
 | 2026-10-11 | Ticking in the shop puts things in the bag; "Done shopping" records the purchases | Two people can shop at once; a mis-tap is simply unticked; purchases (which teach the rhythm) are recorded once, with the store |
 | 2026-10-11 | Staples bought only once get a first guess of 2 months | Most imported staples have just 1–2 purchases; without a guess they'd never be suggested |

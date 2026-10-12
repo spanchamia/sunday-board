@@ -89,3 +89,26 @@ test('storeFor: chosen, preferred, only store, else any', () => {
   assert.equal(storeFor({ item_id: 'c', store_id: null }, links), null);
   assert.equal(storeFor({ item_id: 'z', store_id: null }, links), null);
 });
+
+import { effectiveRestockMode, governedItems } from '../../src/logic/tree.ts';
+
+test('items follow the nearest category setting unless they have their own', () => {
+  const cats = [
+    { id: 'home', parent_id: null, name: 'My Home', sort: 0, default_restock_mode: null },
+    { id: 'kit', parent_id: 'home', name: 'Kitchen', sort: 0, default_restock_mode: null },
+    { id: 'sp', parent_id: 'kit', name: 'Spices', sort: 0, default_restock_mode: 'staple' },
+    { id: 'whole', parent_id: 'sp', name: 'Whole spices', sort: 0, default_restock_mode: null },
+    { id: 'fresh', parent_id: 'sp', name: 'Fresh herbs', sort: 1, default_restock_mode: 'as_needed' },
+  ];
+  assert.equal(effectiveRestockMode(cats, { restock_mode: null, category_id: 'whole' }), 'staple');
+  assert.equal(effectiveRestockMode(cats, { restock_mode: 'as_needed', category_id: 'whole' }), 'as_needed');
+  assert.equal(effectiveRestockMode(cats, { restock_mode: null, category_id: 'fresh' }), 'as_needed');
+  assert.equal(effectiveRestockMode(cats, { restock_mode: null, category_id: 'kit' }), 'as_needed');
+  assert.equal(effectiveRestockMode(cats, { restock_mode: null, category_id: null }), 'as_needed');
+  const items = [
+    { id: 'cumin', category_id: 'sp' }, { id: 'cloves', category_id: 'whole' },
+    { id: 'mint', category_id: 'fresh' }, { id: 'rice', category_id: 'kit' }, { id: 'x', category_id: null },
+  ];
+  assert.deepEqual(governedItems(cats, 'sp', items).map((i) => i.id), ['cumin', 'cloves']);
+  assert.deepEqual(governedItems(cats, 'kit', items).map((i) => i.id), ['rice']);
+});

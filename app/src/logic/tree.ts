@@ -48,6 +48,15 @@ export function descendantIds(nodes: readonly Node[], id: string): Set<string> {
 }
 
 /** Restock mode suggested by the nearest category (walking up) that sets one. */
+/**
+ * What an item really is: its own setting if it has one (an exception), else its
+ * category's (looking up the tree), else as needed.
+ */
+export function effectiveRestockMode(nodes: readonly Node[], item: { restock_mode: string | null; category_id: string | null }): 'staple' | 'as_needed' {
+  if (item.restock_mode === 'staple' || item.restock_mode === 'as_needed') return item.restock_mode;
+  return inheritedRestockMode(nodes, item.category_id) ?? 'as_needed';
+}
+
 export function inheritedRestockMode(nodes: readonly Node[], id: string | null): 'staple' | 'as_needed' | null {
   for (const n of pathTo(nodes, id).reverse()) {
     if (n.default_restock_mode === 'staple' || n.default_restock_mode === 'as_needed') return n.default_restock_mode;
@@ -74,4 +83,18 @@ export function planPath<T extends Node>(nodes: readonly T[], startId: string, n
 /** Can `id` be moved under `newParentId` without creating a loop? */
 export function canMoveUnder(nodes: readonly Node[], id: string, newParentId: string): boolean {
   return !descendantIds(nodes, id).has(newParentId);
+}
+
+/**
+ * Items whose staple / as-needed setting comes from this category: everything in it
+ * or beneath it, except under a sub-category that has its own setting.
+ */
+export function governedItems<T extends { category_id: string | null }>(nodes: readonly Node[], categoryId: string, items: readonly T[]): T[] {
+  const inside = descendantIds(nodes, categoryId);
+  return items.filter((i) => {
+    if (!i.category_id || !inside.has(i.category_id)) return false;
+    const path = pathTo(nodes, i.category_id);
+    const at = path.findIndex((n) => n.id === categoryId);
+    return !path.slice(at + 1).some((n) => n.default_restock_mode === 'staple' || n.default_restock_mode === 'as_needed');
+  });
 }

@@ -3,7 +3,7 @@ import type { FamilyData } from '../../app/useFamily';
 import { addItem, archiveItem, setItemStores, updateItem } from '../../commands/items';
 import { explain } from '../../lib/supabase';
 import type { Item, RestockMode } from '../../lib/types';
-import { inheritedRestockMode } from '../../logic/tree';
+import { pathTo } from '../../logic/tree';
 import { everyLabel } from '../../logic/restock';
 import { Sheet } from '../../ui/Sheet';
 import { useToast } from '../../ui/Toast';
@@ -22,8 +22,13 @@ export function ItemSheet({ data, item, initialName = '', initialCategoryId = nu
   const startCategory = item ? item.category_id : initialCategoryId;
   const [name, setName] = useState(item?.name ?? initialName);
   const [categoryId, setCategoryId] = useState<string | null>(startCategory);
-  const [mode, setMode] = useState<RestockMode>(
-    (item?.restock_mode as RestockMode | undefined) ?? inheritedRestockMode(data.categories, startCategory) ?? 'as_needed');
+  // own = this item's own setting (an exception); null = same as its category.
+  const [own, setOwn] = useState<RestockMode | null>(item ? (item.restock_mode as RestockMode | null) : null);
+  // The nearest category up the tree that says staple / as needed.
+  const source = [...pathTo(data.categories, categoryId)].reverse()
+    .find((c) => c.default_restock_mode === 'staple' || c.default_restock_mode === 'as_needed');
+  const fromCategory = (source?.default_restock_mode as RestockMode | undefined) ?? 'as_needed';
+  const mode: RestockMode = own ?? fromCategory;
   const [weeks, setWeeks] = useState(item?.restock_every_days ? String(Math.round(item.restock_every_days / 7)) : '');
   const [usual, setUsual] = useState(item?.usual_amount ?? '');
   const [notes, setNotes] = useState(item?.notes ?? '');
@@ -43,11 +48,11 @@ export function ItemSheet({ data, item, initialName = '', initialCategoryId = nu
       let id = item?.id;
       if (item) {
         await updateItem(item.id, {
-          name, category_id: categoryId, restock_mode: mode, restock_every_days: restockEveryDays,
+          name, category_id: categoryId, restock_mode: own, restock_every_days: restockEveryDays,
           usual_amount: usual.trim() || null, notes: notes.trim(),
         });
       } else {
-        const created = await addItem({ familyId: data.family.id, name, categoryId, restockMode: mode, restockEveryDays, usualAmount: usual });
+        const created = await addItem({ familyId: data.family.id, name, categoryId, restockMode: own, restockEveryDays, usualAmount: usual });
         id = created.id;
         if (notes.trim()) await updateItem(created.id, { notes: notes.trim() });
       }
@@ -78,16 +83,19 @@ export function ItemSheet({ data, item, initialName = '', initialCategoryId = nu
 
         <CategorySelect categories={data.categories} value={categoryId} onChange={(id) => {
           setCategoryId(id);
-          if (!item) setMode(inheritedRestockMode(data.categories, id) ?? mode);
         }} />
 
         <div className="field">
           <span id="mode-label">How you buy it</span>
           <div className="segmented" role="group" aria-labelledby="mode-label">
-            <button type="button" aria-pressed={mode === 'staple'} onClick={() => setMode('staple')}>Staple</button>
-            <button type="button" aria-pressed={mode === 'as_needed'} onClick={() => setMode('as_needed')}>As needed</button>
+            <button type="button" aria-pressed={own === null} onClick={() => setOwn(null)}>Like category</button>
+            <button type="button" aria-pressed={own === 'staple'} onClick={() => setOwn('staple')}>Staple</button>
+            <button type="button" aria-pressed={own === 'as_needed'} onClick={() => setOwn('as_needed')}>As needed</button>
           </div>
           <span className="hint">
+            {own === null
+              ? (source ? `${mode === 'staple' ? 'A staple' : 'As needed'}, like everything in ${source.name}. ` : 'As needed (its category doesn’t say). ')
+              : source && own !== fromCategory ? `An exception: ${source.name} items are usually ${fromCategory === 'staple' ? 'staples' : 'as needed'}. ` : ''}
             {mode === 'staple'
               ? 'Restocked on a rhythm, like spices, rice or detergent. It comes back on the list when it’s due.'
               : 'Bought for a reason, like vegetables for a planned dish. Added when a meal or you need it.'}

@@ -1,13 +1,17 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import type { Category, Family, Item, ItemStore, Member, Store } from '../lib/types';
+import { effectiveRestockMode } from '../logic/tree';
+
+/** An item plus what it really is (its own setting, else its category's). */
+export type HomeItem = Item & { mode: 'staple' | 'as_needed' };
 
 export interface FamilyData {
   family: Family;
   me: Member;
   members: Member[];
   categories: Category[];
-  items: Item[]; // live (not archived) items
+  items: HomeItem[]; // live (not archived) items
   stores: Store[];
   itemStores: ItemStore[];
 }
@@ -37,7 +41,7 @@ async function load(userId: string): Promise<State> {
     status: 'ready',
     data: {
       family: family.data!, me: me.data, members: members.data ?? [], categories: categories.data ?? [],
-      items: items.data ?? [], stores: stores.data ?? [], itemStores: itemStores.data ?? [],
+      items: (items.data ?? []).map((i) => ({ ...i, mode: effectiveRestockMode(categories.data ?? [], i) })), stores: stores.data ?? [], itemStores: itemStores.data ?? [],
     },
   };
 }

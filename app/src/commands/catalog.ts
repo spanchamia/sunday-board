@@ -1,3 +1,4 @@
+import { inheritedRestockMode } from '../logic/tree';
 import { supabase } from '../lib/supabase';
 import type { CatalogItem, Category, Item, RestockMode, StarterPack } from '../lib/types';
 import { norm } from '../logic/text';
@@ -36,7 +37,10 @@ export interface FamilyContext {
 export async function addFromCatalog(ctx: FamilyContext, c: CatalogItem): Promise<Item> {
   const mode = (c.restock_mode === 'staple' ? 'staple' : 'as_needed') as RestockMode;
   const categoryId = await ensureCategoryPath(ctx.familyId, ctx.categories, ctx.homeId, c.category_path);
-  return addItem({ familyId: ctx.familyId, name: c.name, categoryId, restockMode: mode, catalogItemId: c.id });
+  // Follow the category when it agrees; keep the catalogue's setting as an exception
+  // when it differs, or when the category doesn't say.
+  const own = inheritedRestockMode(ctx.categories, categoryId) === mode ? null : mode;
+  return addItem({ familyId: ctx.familyId, name: c.name, categoryId, restockMode: own, catalogItemId: c.id });
 }
 
 /** Add several catalogue products, skipping any the family already has (by name). */
