@@ -219,16 +219,83 @@ for (const scheme of ['light', 'dark']) {
   await page.getByText('Lemons').waitFor();
   check(await page.getByText('For Chole, plus added by hand').isVisible(), 'Onions shows both reasons');
   await shot(page, 'list');
-  await page.getByLabel('Bought Lemons').check();
-  await page.getByText('Bought Lemons').waitFor();
+  await page.getByLabel('Put Lemons in the bag').click();
+  await page.getByText('In the bag (1)').waitFor();
   const entry = data.list_entries.find((e) => e.item_id === 'i-lemon');
-  check(entry?.status === 'bought' && data.item_events.some((e) => e.item_id === 'i-lemon' && e.kind === 'bought'), 'ticking records the purchase');
-  await page.getByRole('button', { name: 'Undo' }).click();
-  await page.getByLabel('Bought Lemons').waitFor();
-  check(entry?.status === 'to_buy', 'undo puts it back on the list');
+  check(entry?.status === 'in_bag' && !data.item_events.length, 'ticking puts it in the bag, nothing recorded yet');
+  await page.getByLabel('Take Lemons out of the bag').click();
+  await page.getByLabel('Put Lemons in the bag').waitFor();
+  check(entry?.status === 'to_buy', 'unticking takes it back out');
+  await page.getByLabel('Put Lemons in the bag').click();
+  await page.getByRole('button', { name: 'Done shopping: 1 bought' }).click();
+  await page.getByRole('status').filter({ hasText: 'Recorded 1 bought' }).waitFor();
+  check(entry?.status === 'bought' && data.item_events.some((e) => e.item_id === 'i-lemon' && e.kind === 'bought'), 'Done shopping records the purchase');
+  check(await page.getByText(/In the bag/).waitFor({ state: 'hidden', timeout: 5000 }).then(() => true, () => false), 'bag is empty afterwards');
   check(errors.length === 0, `list: no script errors ${errors.join('; ')}`);
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth);
   check(!overflow, 'list: no sideways scrolling');
+  await page.close();
+}
+
+// 6. This week's shop: planned meals + staples running low, amounts, stores, Have it
+{
+  const { page, data, writes, errors } = await open();
+  data.item_events.push(
+    { id: 'e1', family_id: F, item_id: 'i-rice', kind: 'bought', happened_on: day(-70) },
+    { id: 'e2', family_id: F, item_id: 'i-rice', kind: 'bought', happened_on: day(-40) },
+    { id: 'e3', family_id: F, item_id: 'i-chana', kind: 'bought', happened_on: day(-200) },
+  );
+  data.planned_meals.push({ id: 'pm-week', family_id: F, date: day(2), meal_type_id: 'm-d', dish_id: 'd-chole', item_id: null });
+  data.item_stores.push({ item_id: 'i-lemon', store_id: 's-1', family_id: F, preferred: true });
+  await page.goto(`${base}/#/list`);
+  await page.getByText('3 things to check').waitFor();
+  check(true, 'banner offers 3 things for this week (Lemons, Garbanzo beans, Idli rice)');
+  await page.getByRole('button', { name: 'Review' }).click();
+  const sheet = page.getByRole('dialog');
+  await sheet.getByText('Staples running low').waitFor();
+  check(await sheet.getByRole('region', { name: 'For this week’s meals' }).getByText('Lemons').isVisible(), 'Lemons suggested for this week’s Chole');
+  check(await sheet.getByText('For Chole, last bought').isVisible(), 'Garbanzo beans: for Chole and due');
+  check(!(await sheet.getByText('Onions').isVisible()), 'Onions (staple, not due) is not suggested');
+  check(await sheet.getByRole('region', { name: 'Staples running low' }).getByText('Idli rice').isVisible(), 'Idli rice suggested as running low');
+  await shot(page, 'week-shop');
+  await sheet.locator('label', { hasText: 'Idli rice' }).locator('input').uncheck();
+  await sheet.getByRole('button', { name: 'Add 2 to the list' }).click();
+  await page.getByRole('status').filter({ hasText: '1 marked “Have it”' }).waitFor();
+  const reasons = writes.filter((w) => w.table === 'list_entry_reasons' && w.method === 'POST').flatMap((w) => w.rows);
+  check(reasons.some((r) => r.reason === 'planned_meal' && r.planned_meal_id === 'pm-week' && r.dish_id === 'd-chole' && data.list_entries.find((e) => e.id === r.entry_id)?.item_id === 'i-lemon'),
+    'Lemons listed for the planned Chole');
+  check(reasons.some((r) => r.reason === 'restock_due' && data.list_entries.find((e) => e.id === r.entry_id)?.item_id === 'i-chana'), 'Garbanzo beans listed as due');
+  check(data.item_events.some((e) => e.item_id === 'i-rice' && e.kind === 'have_it'), 'unticked staple remembered as Have it');
+  check(!data.list_entries.some((e) => e.item_id === 'i-rice'), 'Idli rice not added');
+  await page.getByText('3 to buy').waitFor();
+  check(!(await page.getByRole('button', { name: 'Review' }).isVisible()), 'nothing left to review');
+
+  await page.getByRole('button', { name: 'Lemons: amount, store, have it' }).click();
+  await sheet.getByRole('button', { name: 'Extra' }).click();
+  await sheet.getByLabel('Amount (optional)').fill('6');
+  check(await sheet.getByLabel('Store').locator('option').first().textContent() === 'Usual store (Costco)', 'store picker names the usual store');
+  await sheet.getByRole('button', { name: 'Save' }).click();
+  await page.getByText('Extra, 6').waitFor();
+  const le = data.list_entries.find((e) => e.item_id === 'i-lemon' && e.status === 'to_buy');
+  check(le?.amount_hint === 'extra' && le?.amount === '6', 'amount saved on the row');
+
+  await page.getByRole('button', { name: 'By store' }).click();
+  check(await page.getByRole('region', { name: 'Costco' }).getByText('Lemons').isVisible(), 'by store: Lemons under Costco (its usual store)');
+  check(await page.getByRole('region', { name: 'Any store' }).getByText('Onions').isVisible(), 'by store: Onions under Any store');
+  await shot(page, 'list-by-store');
+
+  await page.getByRole('button', { name: 'Have Onions' }).click();
+  await page.getByText('2 to buy').waitFor();
+  check(data.list_entries.find((e) => e.id === 'le-onion')?.status === 'removed' && data.item_events.some((e) => e.item_id === 'i-onion' && e.kind === 'have_it'),
+    'Have it takes Onions off and remembers');
+
+  await page.getByLabel('Put Lemons in the bag').click();
+  await page.getByRole('button', { name: 'Done shopping: 1 bought' }).click();
+  await page.getByRole('status').filter({ hasText: 'Recorded 1 bought' }).waitFor();
+  check(data.item_events.some((e) => e.item_id === 'i-lemon' && e.kind === 'bought' && e.store_id === 's-1'), 'purchase recorded at Costco');
+  check(errors.length === 0, `week shop: no script errors ${errors.join('; ')}`);
+  const overflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth);
+  check(!overflow, 'week shop: no sideways scrolling');
   await page.close();
 }
 

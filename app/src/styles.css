@@ -282,3 +282,13 @@ svg.up { transform: rotate(90deg); }
   .meal-type { width: 78px; }
 }
 details > summary { cursor: pointer; min-height: 44px; display: flex; align-items: center; }
+
+/* Shopping list rows: tap the name for details; tick into the bag. */
+.row-main { display: block; text-align: left; background: none; border: none; padding: var(--s2) 0; min-height: var(--tap); cursor: pointer; color: inherit; }
+.check-row.in-bag .name { text-decoration: line-through; color: var(--ink-soft); }
+.small-btn { min-height: 40px; padding: 0 var(--s3); font-size: 15px; }
+.done-bar {
+  position: sticky; bottom: calc(var(--nav-h) + env(safe-area-inset-bottom) + var(--s2)); z-index: 6;
+  padding-top: var(--s2);
+}
+.done-bar .btn { box-shadow: 0 4px 14px rgba(0,0,0,.18); }

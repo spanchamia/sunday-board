@@ -4,6 +4,7 @@ import { addItem, archiveItem, setItemStores, updateItem } from '../../commands/
 import { explain } from '../../lib/supabase';
 import type { Item, RestockMode } from '../../lib/types';
 import { inheritedRestockMode } from '../../logic/tree';
+import { everyLabel } from '../../logic/restock';
 import { Sheet } from '../../ui/Sheet';
 import { useToast } from '../../ui/Toast';
 import { CategorySelect } from './CategorySelect';
@@ -96,7 +97,9 @@ export function ItemSheet({ data, item, initialName = '', initialCategoryId = nu
         {mode === 'staple' && (
           <label className="field"><span>Buy about every … weeks</span>
             <input className="input" inputMode="numeric" value={weeks} onChange={(e) => setWeeks(e.target.value.replace(/[^\d]/g, ''))} placeholder="Leave blank to let the app learn" />
-            <span className="hint">Optional. The app adjusts this from what you actually buy.</span>
+            <span className="hint">{item?.learned_every_days
+              ? `Optional. From what you’ve bought: ${everyLabel(item.learned_every_days).toLowerCase()}. Leave blank to use that.`
+              : 'Optional. Leave blank and the app learns it from what you buy.'}</span>
           </label>
         )}
 

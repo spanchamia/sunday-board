@@ -350,23 +350,18 @@ _Smaller ideas and follow-ups. One line each._
 
 ## 5. In progress
 
-### Build step 3: Plan & Shop list (next)
-- **Goal:** the weekend shopping list: one list with reasons (planned meals' fresh
-  ingredients, staples due for restock, added by hand), Have it / Bought, optional
-  Usual / Extra / Just a bit amounts, split by store, bulk "bought", learned restock
-  rhythm from purchase history, one tap "add what this dish needs".
-- **Data:** 32 current list items and 217 purchases already imported.
-- **Status:** started early (owner request, 2026-10-10): "Add to list" from any dish
-  (fresh ticked, staples unticked, already-listed rows gain the reason) and a basic
-  List tab (grouped by category, reasons, tick = bought + purchase recorded, undo,
-  remove, add by typing). Still to do: Have it, Usual/Extra/Just a bit, split by
-  store, bulk bought, restock suggestions from learned rhythm, planned-week fresh
-  ingredients onto the list.
+### Build step 4: polish, offline, family trial alongside TenBy12 (next)
+- **Goal:** the family uses the new app for a couple of weekend shops alongside
+  TenBy12, and we fix what gets in the way. Candidates: offline list in the shop
+  (service worker + queued ticks), custom SMTP so sign-in emails carry a code (B2),
+  re-check restock suggestions once real purchases accumulate, tablet layout check.
+- **Then:** retire TenBy12 (B1).
 
 ## 6. Change log
 
 | Date | Change | Commit |
 |---|---|---|
+| 2026-10-11 | **Build step 3 done:** "This week's shop" review (fresh ingredients for meals planned in the next 7 days + staples running low, with reasons; unticked staples count as Have it), learned restock rhythm (median gap between purchases, ignoring same-trip repeats; Have it stretches it and rechecks after half the rhythm; first guess 2 months after a single purchase; saved as `learned_every_days`), Have it on each row, Usual / Extra / Just a bit + optional amount + store per row, By aisle / By store, tick = in the bag (synced) and "Done shopping" records all purchases with their store. 20 unit tests, 76 browser checks | (this commit) |
 | 2026-10-10 | "Add to list" from a dish (Dishes row cart, dish editor, planned meal) and a basic List tab | (this commit) |
 | 2026-10-10 | **Build step 2 done:** Plan tab with Week (rolling 7 days, meals by family meal type, the day's to-dos), add-a-meal with suggestions from the family's history, prep reminders created at the right time and moved/removed with their meal, Dishes (ingredients from My Home, prep steps, how often, weekday/weekend), Meal types (order, usual time), To-dos (shared or just me). Signed-in browser test against a fake database (26 checks) | (this commit) |
 | 2026-10-10 | Appearance setting: Automatic / Light / Dark on the Family page, per device, applied before first paint | (this commit) |
@@ -395,6 +390,9 @@ _Smaller ideas and follow-ups. One line each._
 
 | Date | Decision | Why |
 |---|---|---|
+| 2026-10-11 | Restock suggestions and planned-meal ingredients come through a review sheet, not added automatically | The family's pain is pruning: a review keeps one list without rows silently reappearing after being removed |
+| 2026-10-11 | Ticking in the shop puts things in the bag; "Done shopping" records the purchases | Two people can shop at once; a mis-tap is simply unticked; purchases (which teach the rhythm) are recorded once, with the store |
+| 2026-10-11 | Staples bought only once get a first guess of 2 months | Most imported staples have just 1–2 purchases; without a guess they'd never be suggested |
 | 2026-10-10 | Build with esbuild (not Vite); hash routes; no router/UI libraries | Fewer dependencies; works in Claude's sandbox (npm blocked there) and on Cloudflare (normal npm) |
 | 2026-10-10 | Sign-in uses Supabase's default emailed link for now; code-in-email needs custom SMTP (backlog B2) | Supabase only allows template edits with custom SMTP |
 | 2026-10-10 | Front end: React + TypeScript, installable web app (PWA), Supabase client, automated tests; new app lives in `app/` in this repo | Most common toolkit → Claude changes are fastest and most reliable; types catch mistakes; Flutter web was slow, Svelte less common, Next.js adds unneeded server features |

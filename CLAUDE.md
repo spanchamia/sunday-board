@@ -12,7 +12,7 @@ design notes, decisions, previous iterations and open questions. Keep it current
 - Move items between **Backlog** → **In progress** → **Change log** as work happens.
 - Note anything learned about earlier iterations in §1a.
 
-## Where the project stands (as of 2026-10-07)
+## Where the project stands (as of 2026-10-11)
 
 - The owner (Smidth) is building a home-management app for **families**: shared
   family boards synced across devices, meal planning, shopping that saves money
@@ -41,8 +41,9 @@ design notes, decisions, previous iterations and open questions. Keep it current
   Don't build later-phase features into v1; do keep the design open for them.
 - **Data model agreed:** `docs/data-model.md` (read it before writing database code).
 - **Step 1 is live** at https://sunday-board.pages.dev with the family's TenBy12 data
-  imported, and step 2 (Plan tab: week, dishes, prep reminders, to-dos) is live.
-  **Next:** build step 3, the Plan & Shop list; see PLAN.md §5.
+  imported; step 2 (Plan tab: week, dishes, prep reminders, to-dos) and step 3
+  (Plan & Shop list: weekly review, learned restock, Have it, amounts, stores, bag)
+  are live. **Next:** step 4, polish and a family trial alongside TenBy12; see PLAN.md §5.
 
 ## The new app (`app/`)
 
