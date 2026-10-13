@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Sunday Board: the family home, with the sun rising behind it. -->
+  <rect width="512" height="512" fill="#3D6A4E"/>
+  <g id="art">
+    <g stroke="#F2B544" stroke-width="16" stroke-linecap="round">
+      <path d="M368 46v26M444 78l-18 18M476 152h-26M292 78l18 18"/>
+    </g>
+    <circle cx="368" cy="152" r="56" fill="#F2B544"/>
+    <path d="M256 128 L410 262 H376 V396 H136 V262 H102 Z" fill="#FBF6EA" stroke="#FBF6EA" stroke-width="22" stroke-linejoin="round"/>
+    <path d="M256 368c-6-5-58-40-58-74 0-18 14-31 30-31 12 0 22 7 28 17 6-10 16-17 28-17 16 0 30 13 30 31 0 34-52 69-58 74z" fill="#3D6A4E"/>
+  </g>
+</svg>

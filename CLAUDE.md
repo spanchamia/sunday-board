@@ -64,6 +64,8 @@ design notes, decisions, previous iterations and open questions. Keep it current
   (run after schema changes), regenerate `src/lib/db.types.ts` after migrations.
 - Catalogue: `app/supabase/seed/build_catalog.py`; TenBy12 importer:
   `app/supabase/import/tenby12.py` (its output contains family data: never commit).
+- App icon: edit `app/public/icons/icon.svg`, then `node scripts/make-icons.mjs` (from `app/`)
+  renders the PNG sizes (incl. Android's cropped "maskable" one).
 - Deploys: every push to `main` rebuilds Cloudflare Pages (root `app`, output `dist`).
 
 ## The existing Sunday Board code
