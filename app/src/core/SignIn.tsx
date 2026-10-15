@@ -2,7 +2,7 @@ import { useState, type FormEvent } from 'react';
 import { explain, supabase } from '../lib/supabase';
 import { GOOGLE_SIGN_IN_ENABLED } from '../lib/config';
 
-/** Sign in with an emailed code (or the link in the same email), or with Google. */
+/** Sign in with a code sent by email (custom SMTP, template shows {{ .Token }}), or with Google. */
 export function SignIn() {
   const [email, setEmail] = useState('');
   const [sentTo, setSentTo] = useState<string | null>(null);
@@ -58,7 +58,7 @@ export function SignIn() {
           </form>
         ) : (
           <form className="stack" onSubmit={checkCode} noValidate>
-            <p>We sent an email to <strong>{sentTo}</strong>. Tap the sign-in link in it, on this device and in this browser. If the email shows a code instead, type it here.</p>
+            <p>We emailed a sign-in code to <strong>{sentTo}</strong>. Type it below. It can take a minute to arrive, so check spam too.</p>
             <label className="field">
               <span>Code</span>
               <input className="input code-input" inputMode="numeric" autoComplete="one-time-code" autoFocus maxLength={10}
