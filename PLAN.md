@@ -362,6 +362,8 @@ _Smaller ideas and follow-ups. One line each._
 
 | Date | Change | Commit |
 |---|---|---|
+| 2026-10-14 | To-dos: repeat (every day/week/2 weeks/month/year or custom every N days/weeks/months/years; ticking adds the next, unticking removes it; calendar shows upcoming repeats), reminders (at the time, 10 min, 1 h, 1 day, 2 days, 1 week before; no time = from 9 AM), edit sheet for any to-do, and "Add a to-do" on each day in Plan and the Calendar. Migration 0006 | (this commit) |
+| 2026-10-14 | Sign-in by emailed code: dedicated Gmail as Supabase custom SMTP, templates show `{{ .Token }}` (B2 done) | 754b810 |
 | 2026-10-12 | New app icon (owner: the jar looked like a medicine bottle): the family home with a heart, sun rising behind it ("Sunday"), in the app's green and turmeric. Source `app/public/icons/icon.svg`; PNGs from `node scripts/make-icons.mjs` | (this commit) |
 | 2026-10-11 | **Kitchen calendar (G5, brought forward at owner's request):** Calendar page with Week (each day in full: meals by meal type, prep reminders, to-dos; 7 columns on a landscape tablet) and Month (text on tablets, dots on phones; the picked day shown beside/below), tick to-dos in place, add or open meals, rolls over at midnight and syncs live. Per-device settings: "Opens on Home / Calendar" for the kitchen tablet, and hide my "Just me" to-dos on a shared screen. Reached from the launcher tile and Plan | (this commit) |
 | 2026-10-11 | Home launcher like TenBy12's: tiles for Kitchen, Dishes, Meal plan (today's dish), Shopping list (count to buy), Stores, My Home, To-dos (bell badge when due), with line icons drawn for the app. Bottom bar: Home, List, Plan, To-dos (badge), Family. To-dos and Stores got their own pages (Plan keeps Week and Dishes) | (this commit) |

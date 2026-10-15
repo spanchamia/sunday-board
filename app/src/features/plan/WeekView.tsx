@@ -7,11 +7,13 @@ import { Icon } from '../../ui/Icon';
 import { AddMealSheet } from './AddMealSheet';
 import { PlannedMealSheet } from './PlannedMealSheet';
 import { TaskRow } from './TaskRow';
+import { TaskSheet } from '../todos/TaskSheet';
 
 /** Seven days from today (or the week you page to): meals by meal type, and the day's to-dos. */
 export function WeekView({ family, data, index, reload }: { family: FamilyData; data: PlanData; index: PlanIndex; reload: () => Promise<void> }) {
   const [offset, setOffset] = useState(0);
   const [addFor, setAddFor] = useState<string | null>(null);
+  const [todoFor, setTodoFor] = useState<string | null>(null);
   const [open, setOpen] = useState<PlannedMeal | null>(null);
   const start = addDays(today(), offset * 7);
   const days = Array.from({ length: 7 }, (_, i) => addDays(start, i));
@@ -39,7 +41,7 @@ export function WeekView({ family, data, index, reload }: { family: FamilyData; 
       {overdue.length > 0 && (
         <section aria-labelledby="overdue-h" className="stack">
           <h2 id="overdue-h">Still to do</h2>
-          <div className="panel">{overdue.map((t) => <TaskRow key={t.id} task={t} data={data} index={index} reload={reload} showDay />)}</div>
+          <div className="panel">{overdue.map((t) => <TaskRow key={t.id} task={t} data={data} index={index} reload={reload} showDay family={family} />)}</div>
         </section>
       )}
 
@@ -65,14 +67,18 @@ export function WeekView({ family, data, index, reload }: { family: FamilyData; 
                   </span>
                 </div>
               ))}
-              {tasks.map((t) => <TaskRow key={t.id} task={t} data={data} index={index} reload={reload} />)}
-              <button className="list-row add-row" onClick={() => setAddFor(d)}><Icon name="plus" />Add a meal</button>
+              {tasks.map((t) => <TaskRow key={t.id} task={t} data={data} index={index} reload={reload} family={family} />)}
+              <div className="add-rows">
+                <button className="list-row add-row" onClick={() => setAddFor(d)}><Icon name="plus" />Add a meal</button>
+                <button className="list-row add-row" onClick={() => setTodoFor(d)}><Icon name="plus" />Add a to-do</button>
+              </div>
             </div>
           </section>
         );
       })}
 
       {addFor && <AddMealSheet family={family} data={data} index={index} date={addFor} onClose={() => setAddFor(null)} reload={reload} />}
+      {todoFor && <TaskSheet family={family} task={null} initialDate={todoFor} onClose={() => setTodoFor(null)} reload={reload} />}
       {open && <PlannedMealSheet family={family} data={data} index={index} planned={open} onClose={() => setOpen(null)} reload={reload} />}
     </div>
   );

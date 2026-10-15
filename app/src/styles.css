@@ -384,3 +384,15 @@ details > summary { cursor: pointer; min-height: 44px; display: flex; align-item
   .cal-month-wrap .cal-cell { min-height: 104px; }
   .cal-month-wrap > .day { position: sticky; top: var(--s4); }
 }
+.link-btn { background: none; border: none; padding: 0; color: var(--cardamom); font: inherit; font-weight: 700; text-decoration: underline; cursor: pointer; }
+.add-rows { display: grid; grid-template-columns: 1fr 1fr; border-top: 1px solid var(--line); }
+.add-rows .add-row + .add-row { border-left: 1px solid var(--line); }
+.add-rows .add-row { border-top: none; }
+.cal-line.cal-repeat { border: 1px dashed var(--line); color: var(--ink-soft); }
+.cal-dots i.cal-repeat { background: transparent; border: 1px solid var(--ink-soft); }
+.repeat-row { opacity: .7; }
+.panel > .add-rows:first-child { border-top: none; }
+@media (min-width: 700px) {
+  .cal-week .add-rows { grid-template-columns: 1fr; }
+  .cal-week .add-rows .add-row + .add-row { border-left: none; border-top: 1px solid var(--line); }
+}

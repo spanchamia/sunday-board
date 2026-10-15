@@ -122,9 +122,9 @@ export type Database = {
         Relationships: []
       }
       tasks: {
-        Row: { created_at: string; done_at: string | null; due_on: string | null; due_time: string | null; family_id: string; id: string; owner_id: string; planned_meal_id: string | null; prep_step_id: string | null; title: string; visibility: string }
-        Insert: { created_at?: string; done_at?: string | null; due_on?: string | null; due_time?: string | null; family_id: string; id?: string; owner_id?: string; planned_meal_id?: string | null; prep_step_id?: string | null; title: string; visibility?: string }
-        Update: { created_at?: string; done_at?: string | null; due_on?: string | null; due_time?: string | null; family_id?: string; id?: string; owner_id?: string; planned_meal_id?: string | null; prep_step_id?: string | null; title?: string; visibility?: string }
+        Row: { created_at: string; done_at: string | null; due_on: string | null; due_time: string | null; family_id: string; id: string; owner_id: string; planned_meal_id: string | null; prep_step_id: string | null; remind_before: number[]; repeat_every: number | null; repeat_unit: string | null; series_id: string | null; title: string; visibility: string }
+        Insert: { created_at?: string; done_at?: string | null; due_on?: string | null; due_time?: string | null; family_id: string; id?: string; owner_id?: string; planned_meal_id?: string | null; prep_step_id?: string | null; remind_before?: number[]; repeat_every?: number | null; repeat_unit?: string | null; series_id?: string | null; title: string; visibility?: string }
+        Update: { created_at?: string; done_at?: string | null; due_on?: string | null; due_time?: string | null; family_id?: string; id?: string; owner_id?: string; planned_meal_id?: string | null; prep_step_id?: string | null; remind_before?: number[]; repeat_every?: number | null; repeat_unit?: string | null; series_id?: string | null; title?: string; visibility?: string }
         Relationships: []
       }
     }

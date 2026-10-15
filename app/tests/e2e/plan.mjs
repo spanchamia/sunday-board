@@ -420,6 +420,65 @@ for (const scheme of ['light', 'dark']) {
   await page.close();
 }
 
+// 10. To-dos: add from a day in Plan with time, repeat and reminders; tick makes the next one
+{
+  const { page, data, writes, errors } = await open();
+  await page.goto(`${base}/#/meals`);
+  await page.getByRole('heading', { name: 'Next 7 days' }).waitFor();
+  await page.locator('section.day').first().getByRole('button', { name: 'Add a to-do' }).click();
+  const sheet = page.getByRole('dialog');
+  await sheet.getByLabel('What').fill('Water plants');
+  await sheet.getByLabel(/^Time/).fill('18:00');
+  await sheet.getByLabel('Repeat').selectOption('week');
+  await sheet.getByRole('button', { name: 'At the time' }).click();
+  await sheet.getByRole('button', { name: '1 hour before' }).click();
+  await shot(page, 'todo-sheet');
+  await sheet.getByRole('button', { name: 'Add to-do' }).click();
+  await page.getByRole('button', { name: 'Water plants: edit' }).waitFor();
+  const t = data.tasks.find((x) => x.title === 'Water plants');
+  check(t?.due_on === day(0) && t?.due_time === '18:00:00' && t?.repeat_unit === 'week' && t?.repeat_every === 1 && !!t?.series_id
+    && JSON.stringify(t?.remind_before) === '[0,60]', 'to-do saved with date, time, weekly repeat and two reminders');
+  check(await page.getByText('Every week. Reminder: at the time, 1 hour before').isVisible(), 'row shows repeat and reminders');
+
+  await page.getByLabel('Water plants', { exact: true }).click();
+  await page.getByLabel('Water plants, done').waitFor();
+  const next = () => data.tasks.filter((x) => x.series_id === t.series_id && x.id !== t.id);
+  check(next().length === 1 && next()[0].due_on === day(7) && next()[0].done_at === null && JSON.stringify(next()[0].remind_before) === '[0,60]',
+    'ticking it adds next week’s, with the same reminders');
+  await page.getByLabel('Water plants, done').click();
+  await page.getByLabel('Water plants', { exact: true }).waitFor();
+  await page.waitForTimeout(300);
+  check(next().length === 0, 'unticking takes next week’s away again');
+
+  await page.getByRole('button', { name: 'Water plants: edit' }).click();
+  await sheet.getByLabel('What').fill('Water the plants');
+  await sheet.getByRole('button', { name: 'Save' }).click();
+  await page.getByRole('button', { name: 'Water the plants: edit' }).waitFor();
+  check(writes.some((w) => w.table === 'tasks' && w.method === 'PATCH' && w.patch.title === 'Water the plants'), 'editing a to-do saves it');
+
+  await page.goto(`${base}/#/calendar/week`);
+  await page.getByRole('button', { name: 'Next week' }).click();
+  await page.getByText('Appears once the earlier one is done').first().waitFor();
+  check(true, 'calendar shows next week’s repeat ahead of time');
+
+  await page.goto(`${base}/#/todos`);
+  await page.getByLabel('New to-do').fill('Pay water bill');
+  await page.getByRole('button', { name: 'Time, repeat or reminders…' }).click();
+  check(await sheet.getByLabel('What').inputValue() === 'Pay water bill', 'To-dos: details sheet keeps what you typed');
+  await sheet.getByLabel('Repeat').selectOption('custom');
+  await sheet.getByLabel('How many').fill('3');
+  await sheet.getByLabel('Days, weeks, months or years').selectOption('month');
+  await sheet.getByRole('button', { name: '2 days before' }).click();
+  await sheet.getByRole('button', { name: 'Add to-do' }).click();
+  await page.getByRole('button', { name: 'Pay water bill: edit' }).waitFor();
+  const bill = data.tasks.find((x) => x.title === 'Pay water bill');
+  check(bill?.repeat_unit === 'month' && bill?.repeat_every === 3 && JSON.stringify(bill?.remind_before) === '[2880]', 'custom repeat (every 3 months) with a reminder');
+  check(errors.length === 0, `to-dos: no script errors ${errors.join('; ')}`);
+  const overflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth);
+  check(!overflow, 'to-dos: no sideways scrolling');
+  await page.close();
+}
+
 await browser.close();
 server.close();
 if (failures) { console.error(`${failures} check(s) failed`); process.exit(1); }

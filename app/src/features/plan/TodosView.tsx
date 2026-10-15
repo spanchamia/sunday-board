@@ -6,6 +6,7 @@ import { explain } from '../../lib/supabase';
 import { addDays, today } from '../../logic/dates';
 import { useToast } from '../../ui/Toast';
 import { TaskRow } from './TaskRow';
+import { TaskSheet } from '../todos/TaskSheet';
 
 /** Every to-do: prep reminders from planned meals and things you add yourself. */
 export function TodosView({ family, data, index, reload }: { family: FamilyData; data: PlanData; index: PlanIndex; reload: () => Promise<void> }) {
@@ -14,6 +15,7 @@ export function TodosView({ family, data, index, reload }: { family: FamilyData;
   const [due, setDue] = useState(today());
   const [mine, setMine] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [more, setMore] = useState(false);
   const t0 = today();
 
   async function add(e: FormEvent) {
@@ -48,22 +50,28 @@ export function TodosView({ family, data, index, reload }: { family: FamilyData;
           <label className="check-row" style={{ padding: 0 }}><input type="checkbox" checked={mine} onChange={(e) => setMine(e.target.checked)} />Just me</label>
           <button className="btn primary">Add</button>
         </div>
-        <span className="hint">Clear the date for “any time”. “Just me” hides it from the rest of the family.</span>
+        <span className="hint">Clear the date for “any time”. “Just me” hides it from the rest of the family.{' '}
+          <button type="button" className="link-btn" onClick={() => setMore(true)}>Time, repeat or reminders…</button></span>
         {error && <p className="error" role="alert">{error}</p>}
       </form>
 
       {groups.map(([label, rows]) => rows.length > 0 && (
         <section key={label} className="stack" aria-label={label}>
           <h2>{label}</h2>
-          <div className="panel">{rows.map((t) => <TaskRow key={t.id} task={t} data={data} index={index} reload={reload} showDay={label !== 'Today'} />)}</div>
+          <div className="panel">{rows.map((t) => <TaskRow key={t.id} task={t} data={data} index={index} reload={reload} showDay={label !== 'Today'} family={family} />)}</div>
         </section>
       ))}
       {open.length === 0 && <p className="soft empty">Nothing to do. Prep reminders appear here when you plan dishes that need them.</p>}
 
+      {more && (
+        <TaskSheet family={family} task={null} initialTitle={title} initialDate={due || null}
+          onClose={() => { setMore(false); setTitle(''); }} reload={reload} />
+      )}
+
       {done.length > 0 && (
         <details>
           <summary className="soft">Done in the last 2 weeks ({done.length})</summary>
-          <div className="panel" style={{ marginTop: 8 }}>{done.map((t) => <TaskRow key={t.id} task={t} data={data} index={index} reload={reload} showDay />)}</div>
+          <div className="panel" style={{ marginTop: 8 }}>{done.map((t) => <TaskRow key={t.id} task={t} data={data} index={index} reload={reload} showDay family={family} />)}</div>
         </details>
       )}
     </div>

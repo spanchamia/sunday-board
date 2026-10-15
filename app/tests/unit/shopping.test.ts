@@ -129,3 +129,20 @@ test('calendar: weeks start Sunday, months cover whole weeks, month maths clamps
   assert.equal(addMonths('2026-10-11', -1), '2026-09-11');
   assert.equal(addMonths('2026-12-15', 1), '2027-01-15');
 });
+
+import { nextDate, repeatLabel, repeatsBetween, reminderLabel } from '../../src/logic/repeat.ts';
+
+test('repeating to-dos: next date and upcoming repeats', () => {
+  assert.equal(nextDate('2026-10-14', { unit: 'day', every: 1 }), '2026-10-15');
+  assert.equal(nextDate('2026-10-14', { unit: 'week', every: 2 }), '2026-10-28');
+  assert.equal(nextDate('2026-01-31', { unit: 'month', every: 1 }), '2026-02-28');
+  assert.equal(nextDate('2026-02-28', { unit: 'month', every: 1 }, '2026-01-31'), '2026-03-31');   // keeps the 31st
+  assert.equal(nextDate('2028-02-29', { unit: 'year', every: 1 }), '2029-02-28');
+  assert.deepEqual(repeatsBetween('2026-10-14', { unit: 'week', every: 1 }, '2026-11-04'), ['2026-10-21', '2026-10-28', '2026-11-04']);
+  assert.deepEqual(repeatsBetween('2026-10-14', { unit: 'month', every: 1 }, '2026-10-31'), []);
+  assert.equal(repeatLabel({ unit: 'week', every: 1 }), 'Every week');
+  assert.equal(repeatLabel({ unit: 'month', every: 3 }), 'Every 3 months');
+  assert.equal(repeatLabel(null), 'Doesn’t repeat');
+  assert.equal(reminderLabel(1440), '1 day before');
+  assert.equal(reminderLabel(0), 'At the time');
+});

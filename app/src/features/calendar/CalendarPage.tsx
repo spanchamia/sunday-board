@@ -11,8 +11,10 @@ import { Icon } from '../../ui/Icon';
 import { AddMealSheet } from '../plan/AddMealSheet';
 import { PlannedMealSheet } from '../plan/PlannedMealSheet';
 import { TaskRow } from '../plan/TaskRow';
+import { TaskSheet } from '../todos/TaskSheet';
+import { repeatLabel, repeatsBetween, type RepeatUnit } from '../../logic/repeat';
 
-interface DayStuff { meals: PlannedMeal[]; prep: Task[]; todos: Task[] }
+interface DayStuff { meals: PlannedMeal[]; prep: Task[]; todos: Task[]; repeats: Task[] }   // repeats: upcoming copies of repeating to-dos
 
 /**
  * The family calendar: every day's meals, prep reminders and to-dos. Week view for
@@ -31,20 +33,26 @@ export function CalendarPage({ family, viewParam }: { family: FamilyData; viewPa
   useEffect(() => { if (viewParam === 'month' || viewParam === 'week') setView(viewParam); }, [viewParam]);
   useEffect(() => { saveCalendarView(view); }, [view]);
 
+  const lastShown = view === 'week' ? addDays(weekDays(at)[0]!, 6) : monthGrid(at).at(-1)!.at(-1)!;
   const byDay = useMemo(() => {
     const m = new Map<string, DayStuff>();
-    const get = (d: string) => { if (!m.has(d)) m.set(d, { meals: [], prep: [], todos: [] }); return m.get(d)!; };
+    const get = (d: string) => { if (!m.has(d)) m.set(d, { meals: [], prep: [], todos: [], repeats: [] }); return m.get(d)!; };
     if (!plan.data) return m;
     const sortOf = new Map(plan.data.mealTypes.map((x) => [x.id, x.sort]));
     for (const p of plan.data.planned) get(p.date).meals.push(p);
     for (const k of plan.data.tasks) if (k.due_on) (k.planned_meal_id ? get(k.due_on).prep : get(k.due_on).todos).push(k);
+    // Show where open repeating to-dos will come back (the real one appears when the current one is done).
+    for (const k of plan.data.tasks) {
+      if (k.done_at || !k.due_on || !k.repeat_unit || !k.repeat_every) continue;
+      for (const d of repeatsBetween(k.due_on, { unit: k.repeat_unit as RepeatUnit, every: k.repeat_every }, lastShown)) get(d).repeats.push(k);
+    }
     for (const s of m.values()) {
       s.meals.sort((a, b) => (sortOf.get(a.meal_type_id) ?? 0) - (sortOf.get(b.meal_type_id) ?? 0));
       const byTime = (a: Task, b: Task) => Number(!!a.done_at) - Number(!!b.done_at) || (a.due_time ?? '99').localeCompare(b.due_time ?? '99');
       s.prep.sort(byTime); s.todos.sort(byTime);
     }
     return m;
-  }, [plan.data]);
+  }, [plan.data, lastShown]);
 
   const move = (n: number) => { setAnchor(view === 'week' ? addDays(at, n * 7) : addMonths(at, n)); setPicked(null); };
   const goToday = () => { setAnchor(null); setPicked(null); };
@@ -107,6 +115,7 @@ function MonthCell({ day, today, inMonth, selected, stuff, index, onPick }: {
   for (const m of stuff?.meals ?? []) lines.push({ key: m.id, cls: 'cal-meal', text: (m.dish_id && index.dishById.get(m.dish_id)?.name) || 'Meal' });
   for (const k of stuff?.prep ?? []) lines.push({ key: k.id, cls: 'cal-prep', text: k.title, done: !!k.done_at });
   for (const k of stuff?.todos ?? []) lines.push({ key: k.id, cls: 'cal-todo', text: k.title, done: !!k.done_at });
+  for (const k of stuff?.repeats ?? []) lines.push({ key: `r-${k.id}`, cls: 'cal-repeat', text: k.title });
   const shown = lines.slice(0, 4);
   const n = fromISODate(day).getDate();
   const name = fromISODate(day).toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' });
@@ -133,13 +142,15 @@ function DayPanel({ family, day, today, stuff, data, index, reload, big = false 
 }) {
   const [open, setOpen] = useState<PlannedMeal | null>(null);
   const [adding, setAdding] = useState(false);
+  const [addingTodo, setAddingTodo] = useState(false);
   const meals = stuff?.meals ?? [];
   const types = data.mealTypes.filter((mt) => meals.some((m) => m.meal_type_id === mt.id));
   const overdue = day === today ? data.tasks.filter((k) => !k.done_at && k.due_on && k.due_on < today) : [];
   const label = dayLabel(day, fromISODate(today));
   const weekday = fromISODate(day).toLocaleDateString(undefined, big ? { weekday: 'long', month: 'long', day: 'numeric' } : { weekday: 'short', day: 'numeric' });
   const tasks = [...(stuff?.prep ?? []), ...(stuff?.todos ?? [])];
-  const empty = !meals.length && !tasks.length && !overdue.length;
+  const repeats = stuff?.repeats ?? [];
+  const empty = !meals.length && !tasks.length && !overdue.length && !repeats.length;
   return (
     <section className={`day cal-day${day === today ? ' is-today' : ''}`} aria-label={`${label}, ${weekday}`}>
       <h2 className="day-h">
@@ -158,12 +169,23 @@ function DayPanel({ family, day, today, stuff, data, index, reload, big = false 
             </span>
           </div>
         ))}
-        {tasks.map((k) => <TaskRow key={k.id} task={k} data={data} index={index} reload={reload} />)}
+        {tasks.map((k) => <TaskRow key={k.id} task={k} data={data} index={index} reload={reload} family={family} />)}
+        {repeats.map((k) => (
+          <div key={`r-${k.id}`} className="check-row task-row repeat-row">
+            <span aria-hidden="true" style={{ width: 22, textAlign: 'center' }}>↻</span>
+            <span className="grow">{k.title}
+              <span className="meta" style={{ display: 'block' }}>{repeatLabel({ unit: k.repeat_unit as RepeatUnit, every: k.repeat_every! })}. Appears once the earlier one is done</span></span>
+          </div>
+        ))}
         {overdue.length > 0 && <div className="cal-sub">Still to do from earlier</div>}
-        {overdue.map((k) => <TaskRow key={k.id} task={k} data={data} index={index} reload={reload} showDay />)}
+        {overdue.map((k) => <TaskRow key={k.id} task={k} data={data} index={index} reload={reload} showDay family={family} />)}
         {empty && <p className="soft small cal-empty">Nothing planned.</p>}
-        <button className="list-row add-row" onClick={() => setAdding(true)}><Icon name="plus" />Add a meal</button>
+        <div className="add-rows">
+          <button className="list-row add-row" onClick={() => setAdding(true)}><Icon name="plus" />Add a meal</button>
+          <button className="list-row add-row" onClick={() => setAddingTodo(true)}><Icon name="plus" />Add a to-do</button>
+        </div>
       </div>
+      {addingTodo && <TaskSheet family={family} task={null} initialDate={day} onClose={() => setAddingTodo(false)} reload={reload} />}
       {adding && <AddMealSheet family={family} data={data} index={index} date={day} onClose={() => setAdding(false)} reload={reload} />}
       {open && <PlannedMealSheet family={family} data={data} index={index} planned={open} onClose={() => setOpen(null)} reload={reload} />}
     </section>
