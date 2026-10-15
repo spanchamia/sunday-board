@@ -479,6 +479,21 @@ for (const scheme of ['light', 'dark']) {
   await page.close();
 }
 
+// 11. Notifications switch on the Family page (the sending itself is tested on a real phone)
+{
+  const { page, errors } = await open();
+  await page.goto(`${base}/#/family`);
+  await page.getByText('Notifications are blocked for this site').waitFor();
+  check(true, 'blocked notifications: explains how to allow them');
+  // Headless Chromium always says "denied"; act like a phone that hasn't been asked yet.
+  await page.addInitScript(() => Object.defineProperty(Notification, 'permission', { get: () => 'default' }));
+  await page.reload();
+  await page.getByRole('button', { name: 'Turn on notifications' }).waitFor();
+  check(await page.getByText('Family to-dos go to everyone who turns this on').isVisible(), 'Family page offers notifications with an explanation');
+  check(errors.length === 0, `notifications: no script errors ${errors.join('; ')}`);
+  await page.close();
+}
+
 await browser.close();
 server.close();
 if (failures) { console.error(`${failures} check(s) failed`); process.exit(1); }

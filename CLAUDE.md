@@ -66,6 +66,9 @@ design notes, decisions, previous iterations and open questions. Keep it current
   `app/supabase/import/tenby12.py` (its output contains family data: never commit).
 - App icon: edit `app/public/icons/icon.svg`, then `node scripts/make-icons.mjs` (from `app/`)
   renders the PNG sizes (incl. Android's cropped "maskable" one).
+- Notifications: Edge Function `app/supabase/functions/push/index.ts` (deploy with the Supabase connector,
+  verify_jwt false; it checks sign-in itself for "test"), called every minute by pg_cron (0008).
+  Push keys live only in `private.push_keys`. Client side: `src/lib/push.ts`, `src/sw.template.js`.
 - Deploys: every push to `main` rebuilds Cloudflare Pages (root `app`, output `dist`).
 
 ## The existing Sunday Board code

@@ -7,6 +7,7 @@ import { Icon } from '../ui/Icon';
 import { useToast } from '../ui/Toast';
 import { ThemeSwitch } from '../ui/ThemeSwitch';
 import { DeviceSettings } from './DeviceSettings';
+import { NotificationSettings } from './NotificationSettings';
 
 export function FamilyPage({ data }: { data: FamilyData }) {
   const toast = useToast();
@@ -67,6 +68,7 @@ export function FamilyPage({ data }: { data: FamilyData }) {
       <section className="stack" aria-labelledby="device-h">
         <h2 id="device-h">This device</h2>
         <ThemeSwitch />
+        <NotificationSettings />
         <DeviceSettings />
       </section>
 

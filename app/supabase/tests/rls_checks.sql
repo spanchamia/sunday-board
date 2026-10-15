@@ -65,6 +65,31 @@ do $$ begin
   exception when others then insert into results(check_name,value) values ('member issues new invite code', 'blocked'); end;
 end $$;
 
+-- Notifications: A2 turns them on for a device
+select public.save_push_subscription('https://push.example/a2', 'p256', 'auth', 'America/Los_Angeles');
+insert into results(check_name,value) select 'A2 sees own device (want 1)', count(*)::text from public.push_subscriptions;
+
+-- Bob tries to see or remove A2's device, or use server-only functions
+select set_config('request.jwt.claims','{"sub":"00000000-0000-0000-0000-0000000000b1","role":"authenticated"}',true);
+insert into results(check_name,value) select 'B sees A2 device (want 0)', count(*)::text from public.push_subscriptions;
+select public.remove_push_subscription('https://push.example/a2');
+do $$ begin
+  begin insert into public.push_subscriptions (endpoint, family_id, p256dh, auth) select 'https://push.example/b', fid, 'x', 'y' from ids;
+    insert into results(check_name,value) values ('B adds device straight into table', 'ALLOWED - BAD');
+  exception when others then insert into results(check_name,value) values ('B adds device straight into table', 'blocked'); end;
+  begin perform public.push_due_reminders();
+    insert into results(check_name,value) values ('B reads due reminders (server only)', 'ALLOWED - BAD');
+  exception when others then insert into results(check_name,value) values ('B reads due reminders (server only)', 'blocked'); end;
+  begin perform public.push_keys();
+    insert into results(check_name,value) values ('B reads push keys (server only)', 'ALLOWED - BAD');
+  exception when others then insert into results(check_name,value) values ('B reads push keys (server only)', 'blocked'); end;
+end $$;
+insert into results(check_name,value) select 'B sees reminders_sent rows (want 0)', count(*)::text from public.reminders_sent;
+reset role;
+insert into results(check_name,value)
+  select 'A2 device survives B''s removal (want 1)', count(*)::text from public.push_subscriptions where endpoint = 'https://push.example/a2';
+set local role authenticated;
+
 select set_config('request.jwt.claims','{"sub":"00000000-0000-0000-0000-0000000000a1","role":"authenticated"}',true);
 insert into results(check_name,value) select 'owner sees tasks (want 2)', count(*)::text from public.tasks;
 

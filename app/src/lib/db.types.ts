@@ -44,9 +44,9 @@ export type Database = {
         Relationships: []
       }
       families: {
-        Row: { created_at: string; id: string; invite_code: string; name: string }
-        Insert: { created_at?: string; id?: string; invite_code?: string; name: string }
-        Update: { created_at?: string; id?: string; invite_code?: string; name?: string }
+        Row: { created_at: string; id: string; invite_code: string; name: string; timezone: string }
+        Insert: { created_at?: string; id?: string; invite_code?: string; name: string; timezone?: string }
+        Update: { created_at?: string; id?: string; invite_code?: string; name?: string; timezone?: string }
         Relationships: []
       }
       family_members: {
@@ -133,6 +133,8 @@ export type Database = {
       create_family: { Args: { family_name: string; my_name: string }; Returns: string }
       join_family: { Args: { code: string; my_name: string }; Returns: string }
       new_invite_code: { Args: never; Returns: string }
+      remove_push_subscription: { Args: { p_endpoint: string }; Returns: undefined }
+      save_push_subscription: { Args: { p_auth: string; p_endpoint: string; p_p256dh: string; p_tz?: string }; Returns: undefined }
       search_catalog: { Args: { max_results?: number; q: string }; Returns: { aliases: string[]; category_path: string[]; id: string; name: string; restock_mode: string; search_text: string; sizes: string[]; tags: string[] }[]; SetofOptions: { from: '*'; to: 'catalog_items'; isOneToOne: false; isSetofReturn: true } }
     }
     Enums: { [_ in never]: never }
