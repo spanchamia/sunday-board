@@ -54,6 +54,22 @@ export async function disablePush(): Promise<void> {
   await sub.unsubscribe();
 }
 
+/** This device's morning summary time ('HH:MM'), or null when it's off. */
+export async function getSummaryTime(): Promise<string | null> {
+  const sub = await currentSubscription();
+  if (!sub) return null;
+  const { data } = await supabase.from('push_subscriptions').select('summary_time').eq('endpoint', sub.endpoint).maybeSingle();
+  return data?.summary_time?.slice(0, 5) ?? null;
+}
+
+/** Turn this device's morning summary on at a time ('HH:MM'), or off (null). */
+export async function setSummaryTime(time: string | null): Promise<void> {
+  const sub = await currentSubscription();
+  if (!sub) throw new Error('Turn notifications on first.');
+  const { error } = await supabase.rpc('set_push_summary', { p_endpoint: sub.endpoint, p_time: time ? `${time}:00` : null });
+  if (error) throw error;
+}
+
 export async function sendTestPush(): Promise<void> {
   const sub = await currentSubscription();
   if (!sub) throw new Error('Turn notifications on first.');

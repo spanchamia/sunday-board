@@ -57,7 +57,7 @@ export async function installFake(page, db) {
     const wantsObject = (req.headers()['accept'] ?? '').includes('vnd.pgrst.object');
     const json = (status, body) => route.fulfill({ status, contentType: 'application/json', body: JSON.stringify(body) });
 
-    if (table.startsWith('rpc/')) return json(200, []);
+    if (table.startsWith('rpc/')) { writes.push({ method: 'RPC', table: table.slice(4), body: JSON.parse(req.postData() ?? '{}') }); return json(200, null); }
     db[table] ??= [];
     const method = req.method();
     if (method === 'HEAD') {

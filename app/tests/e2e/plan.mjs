@@ -494,6 +494,32 @@ for (const scheme of ['light', 'dark']) {
   await page.close();
 }
 
+// 12. Morning summary on a device that already has notifications on
+{
+  const { page, data, writes, errors } = await open();
+  data.push_subscriptions = [{ endpoint: 'https://push.example/me', user_id: USER.id, family_id: F, p256dh: 'x', auth: 'y', summary_time: null, summary_sent_on: null }];
+  await page.addInitScript(() => {
+    Object.defineProperty(Notification, 'permission', { get: () => 'granted' });
+    const sub = { endpoint: 'https://push.example/me', unsubscribe: async () => true, toJSON: () => ({ endpoint: 'https://push.example/me', keys: { p256dh: 'x', auth: 'y' } }) };
+    navigator.serviceWorker.getRegistration = async () => ({ pushManager: { getSubscription: async () => sub } });
+  });
+  await page.goto(`${base}/#/family`);
+  await page.getByRole('checkbox', { name: /Morning summary/ }).click();
+  await page.getByLabel('Morning summary time').waitFor();
+  const calls = () => writes.filter((w) => w.method === 'RPC' && w.table === 'set_push_summary');
+  check(calls().at(-1)?.body.p_time === '07:30:00' && calls().at(-1)?.body.p_endpoint === 'https://push.example/me', 'turning it on saves 7:30 AM for this device');
+  await page.getByLabel('Morning summary time').fill('06:45');
+  await page.getByRole('button', { name: 'Save' }).click();
+  await page.getByRole('status').filter({ hasText: 'Morning summary at 6:45 AM' }).waitFor();
+  check(calls().at(-1)?.body.p_time === '06:45:00', 'changing the time saves it');
+  await shot(page, 'morning-summary');
+  await page.getByRole('checkbox', { name: /Morning summary/ }).click();
+  await page.getByRole('status').filter({ hasText: 'Morning summary off' }).waitFor();
+  check(calls().at(-1)?.body.p_time === null, 'unticking turns it off');
+  check(errors.length === 0, `morning summary: no script errors ${errors.join('; ')}`);
+  await page.close();
+}
+
 await browser.close();
 server.close();
 if (failures) { console.error(`${failures} check(s) failed`); process.exit(1); }

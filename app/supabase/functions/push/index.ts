@@ -1,5 +1,5 @@
 // Sunday Board push notifications (Supabase Edge Function, Deno).
-//   POST {action:"tick"}        every minute from pg_cron: send due reminders
+//   POST {action:"tick"}        every minute from pg_cron: send due reminders and morning summaries
 //   POST {action:"public-key"}  the public push key phones subscribe with
 //   POST {action:"test", endpoint}  (signed in) send a test to this device
 // Deployed with verify_jwt = false: "tick" and "public-key" reveal nothing and only
@@ -88,7 +88,16 @@ async function tick() {
     };
     for (const s of subs as Sub[]) if (await send(s, payload)) sent++;
   }
-  return { due: due?.length ?? 0, sent };
+  // Morning summaries: the database picks the devices due now, marks them sent for
+  // today, and writes the text (today's meals, to-dos, overdue).
+  const { data: summaries, error: e2 } = await db.rpc('push_claim_summaries');
+  if (e2) throw e2;
+  if (summaries?.length) await keys();
+  for (const m of (summaries ?? []) as Array<{ endpoint: string; p256dh: string; auth: string; title: string; body: string }>) {
+    if (await send({ endpoint: m.endpoint, p256dh: m.p256dh, auth: m.auth, user_id: '' },
+      { title: m.title, body: m.body, tag: 'morning-summary', url: '/#/calendar' })) sent++;
+  }
+  return { due: due?.length ?? 0, summaries: summaries?.length ?? 0, sent };
 }
 
 Deno.serve(async (req) => {

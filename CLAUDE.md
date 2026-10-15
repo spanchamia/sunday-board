@@ -67,7 +67,7 @@ design notes, decisions, previous iterations and open questions. Keep it current
 - App icon: edit `app/public/icons/icon.svg`, then `node scripts/make-icons.mjs` (from `app/`)
   renders the PNG sizes (incl. Android's cropped "maskable" one).
 - Notifications: Edge Function `app/supabase/functions/push/index.ts` (deploy with the Supabase connector,
-  verify_jwt false; it checks sign-in itself for "test"), called every minute by pg_cron (0008).
+  verify_jwt false; it checks sign-in itself for "test"), called every minute by pg_cron (0008); also sends each device's morning summary (0009).
   Push keys live only in `private.push_keys`. Client side: `src/lib/push.ts`, `src/sw.template.js`.
 - Deploys: every push to `main` rebuilds Cloudflare Pages (root `app`, output `dist`).
 

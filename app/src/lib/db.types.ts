@@ -67,6 +67,12 @@ export type Database = {
         Update: { family_id?: string; item_id?: string; preferred?: boolean; store_id?: string }
         Relationships: []
       }
+      push_subscriptions: {
+        Row: { auth: string; created_at: string; endpoint: string; family_id: string; p256dh: string; summary_sent_on: string | null; summary_time: string | null; user_id: string }
+        Insert: { auth: string; created_at?: string; endpoint: string; family_id: string; p256dh: string; summary_sent_on?: string | null; summary_time?: string | null; user_id?: string }
+        Update: { auth?: string; created_at?: string; endpoint?: string; family_id?: string; p256dh?: string; summary_sent_on?: string | null; summary_time?: string | null; user_id?: string }
+        Relationships: []
+      }
       items: {
         Row: { archived_at: string | null; catalog_item_id: string | null; category_id: string | null; created_at: string; family_id: string; id: string; learned_every_days: number | null; name: string; notes: string; restock_every_days: number | null; restock_mode: string | null; updated_at: string; usual_amount: string | null }
         Insert: { archived_at?: string | null; catalog_item_id?: string | null; category_id?: string | null; created_at?: string; family_id: string; id?: string; learned_every_days?: number | null; name: string; notes?: string; restock_every_days?: number | null; restock_mode?: string | null; updated_at?: string; usual_amount?: string | null }
@@ -134,6 +140,7 @@ export type Database = {
       join_family: { Args: { code: string; my_name: string }; Returns: string }
       new_invite_code: { Args: never; Returns: string }
       remove_push_subscription: { Args: { p_endpoint: string }; Returns: undefined }
+      set_push_summary: { Args: { p_endpoint: string; p_time: string | null }; Returns: undefined }
       save_push_subscription: { Args: { p_auth: string; p_endpoint: string; p_p256dh: string; p_tz?: string }; Returns: undefined }
       search_catalog: { Args: { max_results?: number; q: string }; Returns: { aliases: string[]; category_path: string[]; id: string; name: string; restock_mode: string; search_text: string; sizes: string[]; tags: string[] }[]; SetofOptions: { from: '*'; to: 'catalog_items'; isOneToOne: false; isSetofReturn: true } }
     }
