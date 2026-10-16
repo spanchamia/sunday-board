@@ -351,6 +351,11 @@ _Smaller ideas and follow-ups. One line each._
 
 ## 5. In progress
 
+### Notification address renewal (waiting on owner, 2026-10-15)
+- **Problem:** Google retired the Android phone's push address; the server deleted the device while the phone still showed "On".
+- **Fix ready on branch `push-renewal`:** migration 0010 (gone_at, save_push_device, push_replace_endpoint), Edge Function v3 (marks gone instead of deleting, `resubscribe` action), app renews quietly on open, service worker handles `pushsubscriptionchange`. 131 browser checks pass.
+- **To finish:** owner runs `0010_push_renewal.sql` in the SQL editor (connector approval was cancelled) → record it in schema_migrations → deploy Edge Function from the branch → merge `push-renewal` into main → owner opens the app on the Android phone and re-sets its morning summary once.
+
 ### Build step 4: polish, offline, family trial alongside TenBy12 (next)
 - **Goal:** the family uses the new app for a couple of weekend shops alongside
   TenBy12, and we fix what gets in the way. Candidates: offline list in the shop
