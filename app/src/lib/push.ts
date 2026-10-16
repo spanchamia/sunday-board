@@ -29,22 +29,61 @@ function keyBytes(base64url: string): Uint8Array {
   return Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
 }
 
+async function publicKey(): Promise<string> {
+  const { data, error } = await supabase.functions.invoke('push', { body: { action: 'public-key' } });
+  if (error || !data?.publicKey) throw new Error('Couldn’t reach the notification service. Try again in a moment.');
+  return data.publicKey as string;
+}
+
+async function save(sub: PushSubscription, replaces: string | null = null): Promise<void> {
+  const j = sub.toJSON();
+  const saved = await supabase.rpc('save_push_device', {
+    p_endpoint: j.endpoint!, p_p256dh: j.keys!.p256dh!, p_auth: j.keys!.auth!,
+    p_tz: Intl.DateTimeFormat().resolvedOptions().timeZone,
+    ...(replaces ? { p_replaces: replaces } : {}),
+  });
+  if (saved.error) throw saved.error;
+}
+
 /** Ask permission, subscribe this device and save it. Throws a readable message if it can't. */
 export async function enablePush(): Promise<void> {
   const permission = await Notification.requestPermission();
   if (permission !== 'granted') throw new Error('Notifications weren’t allowed. You can allow them in this browser’s site settings.');
-  const { data, error } = await supabase.functions.invoke('push', { body: { action: 'public-key' } });
-  if (error || !data?.publicKey) throw new Error('Couldn’t reach the notification service. Try again in a moment.');
+  const key = await publicKey();
   const reg = await registration();
   await navigator.serviceWorker.ready;
   let sub = await reg.pushManager.getSubscription();
-  if (!sub) sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: keyBytes(data.publicKey) as BufferSource });
-  const j = sub.toJSON();
-  const saved = await supabase.rpc('save_push_subscription', {
-    p_endpoint: j.endpoint!, p_p256dh: j.keys!.p256dh!, p_auth: j.keys!.auth!,
-    p_tz: Intl.DateTimeFormat().resolvedOptions().timeZone,
-  });
-  if (saved.error) throw saved.error;
+  if (!sub) sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: keyBytes(key) as BufferSource });
+  await save(sub);
+}
+
+/**
+ * Keep this device's notifications working. Push services (Google, Apple) sometimes
+ * retire a phone's address; the server then marks it gone. When the app opens, check
+ * the server still has a live address for this device, and if not, get a fresh one
+ * (settings such as the morning summary carry over). Quiet: never asks or shows anything.
+ */
+export async function syncPush(): Promise<'ok' | 'renewed' | 'off'> {
+  if (pushSupport() !== 'ok' || Notification.permission !== 'granted') return 'off';
+  const sub = await currentSubscription();
+  if (!sub) return 'off';
+  const { data, error } = await supabase.from('push_subscriptions').select('gone_at').eq('endpoint', sub.endpoint).maybeSingle();
+  if (error) return 'ok';                       // can't tell (offline): try again next time
+  if (data && !data.gone_at) return 'ok';
+  const old = sub.endpoint;
+  await sub.unsubscribe().catch(() => false);
+  const reg = await registration();
+  const fresh = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: keyBytes(await publicKey()) as BufferSource });
+  await save(fresh, old);
+  return 'renewed';
+}
+
+let lastSync = 0;
+/** syncPush at most every 10 minutes (called when the app opens or comes back to the front). */
+export function syncPushSoon(): void {
+  if (Date.now() - lastSync < 10 * 60_000) return;
+  lastSync = Date.now();
+  void syncPush().catch(() => { lastSync = 0; });
 }
 
 export async function disablePush(): Promise<void> {

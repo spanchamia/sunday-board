@@ -2,6 +2,8 @@
 //   POST {action:"tick"}        every minute from pg_cron: send due reminders and morning summaries
 //   POST {action:"public-key"}  the public push key phones subscribe with
 //   POST {action:"test", endpoint}  (signed in) send a test to this device
+//   POST {action:"resubscribe", old, endpoint, keys}  the service worker got a new push
+//        address in the background; the old address (known only to that phone) proves it
 // Deployed with verify_jwt = false: "tick" and "public-key" reveal nothing and only
 // ever send reminders that are genuinely due; "test" checks the caller's sign-in.
 import webpush from 'npm:web-push@3.6.7';
@@ -46,7 +48,8 @@ async function send(sub: Sub, payload: Record<string, unknown>): Promise<boolean
     return true;
   } catch (e) {
     const code = (e as { statusCode?: number }).statusCode;
-    if (code === 404 || code === 410) await db.from('push_subscriptions').delete().eq('endpoint', sub.endpoint); // phone unsubscribed
+    // The push service retired this address: mark it so the app renews it next time it opens.
+    if (code === 404 || code === 410) await db.from('push_subscriptions').update({ gone_at: new Date().toISOString() }).eq('endpoint', sub.endpoint);
     else console.error('push failed', code, (e as Error).message);
     return false;
   }
@@ -75,7 +78,7 @@ async function tick() {
     // Claim it first so two runs can't both send it.
     const claim = await db.from('reminders_sent').insert({ task_id: r.task_id, minutes_before: r.minutes_before }).select('task_id');
     if (claim.error || !claim.data?.length) continue;
-    let q = db.from('push_subscriptions').select('endpoint, p256dh, auth, user_id').eq('family_id', r.family_id);
+    let q = db.from('push_subscriptions').select('endpoint, p256dh, auth, user_id').eq('family_id', r.family_id).is('gone_at', null);
     if (r.visibility === 'private') q = q.eq('user_id', r.owner_id);
     const { data: subs } = await q;
     if (!subs?.length) continue;
@@ -105,6 +108,13 @@ Deno.serve(async (req) => {
   try {
     const body = await req.json().catch(() => ({}));
     if (body.action === 'public-key') return json({ publicKey: (await keys()).public_key });
+    if (body.action === 'resubscribe') {
+      const { old, endpoint, keys: k } = body as { old?: string; endpoint?: string; keys?: { p256dh?: string; auth?: string } };
+      if (!old || !endpoint || !k?.p256dh || !k?.auth) return json({ error: 'Missing details' }, 400);
+      const { data, error } = await db.rpc('push_replace_endpoint', { p_old: old, p_new: endpoint, p_p256dh: k.p256dh, p_auth: k.auth });
+      if (error) throw error;
+      return json({ ok: !!data });
+    }
     if (body.action === 'test') {
       const token = (req.headers.get('Authorization') ?? '').replace(/^Bearer\s+/i, '');
       const { data: { user } } = await db.auth.getUser(token);
