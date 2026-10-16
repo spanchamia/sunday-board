@@ -351,11 +351,6 @@ _Smaller ideas and follow-ups. One line each._
 
 ## 5. In progress
 
-### Notification address renewal (waiting on owner, 2026-10-15)
-- **Problem:** Google retired the Android phone's push address; the server deleted the device while the phone still showed "On".
-- **Fix ready on branch `push-renewal`:** migration 0010 (gone_at, save_push_device, push_replace_endpoint), Edge Function v3 (marks gone instead of deleting, `resubscribe` action), app renews quietly on open, service worker handles `pushsubscriptionchange`. 131 browser checks pass.
-- **To finish:** owner runs `0010_push_renewal.sql` in the SQL editor (connector approval was cancelled) → record it in schema_migrations → deploy Edge Function from the branch → merge `push-renewal` into main → owner opens the app on the Android phone and re-sets its morning summary once.
-
 ### Build step 4: polish, offline, family trial alongside TenBy12 (next)
 - **Goal:** the family uses the new app for a couple of weekend shops alongside
   TenBy12, and we fix what gets in the way. Candidates: offline list in the shop
@@ -367,6 +362,7 @@ _Smaller ideas and follow-ups. One line each._
 
 | Date | Change | Commit |
 |---|---|---|
+| 2026-10-15 | Notifications keep working when a phone's push address changes: the server marks retired addresses (gone_at) instead of deleting them, the app checks on open and renews quietly (morning summary carries over), the service worker reports background changes (`resubscribe`). Migration 0010 (run by owner in SQL editor), Edge Function v3. Found when Google retired the Android phone's address | (this commit) |
 | 2026-10-15 | **Morning summary (B5 done):** per device, in Family → This device under Notifications: tick Morning summary and pick a time. Each morning: "Today: Thursday, Oct 15" with today's meals by meal type, to-dos (first 3 with times, +N more) and how many are overdue; tapping opens the Calendar. Sent once a day (up to 2 h late if the server was busy). Migration 0009 (applied by connector), Edge Function v2. Also fixed the oversized store icon on the Family page | (this commit) |
 | 2026-10-14 | **Phone notifications (B3 done):** Family → This device → Turn on notifications (Android Chrome, iPhone Home Screen app), Send a test, Turn off. Reminders and prep reminders (at their time) are pushed by the `push` Edge Function, run every minute by pg_cron; family to-dos go to everyone who turned notifications on, "Just me" only to the owner; each reminder goes once (reminders_sent) and again if the to-do's time changes. Push keys are generated inside Supabase (private.push_keys), never in code or chat. Migrations 0007 + 0008 run by the owner in the SQL editor (connector approval was cancelled). 8 new access checks pass. Owner confirmed working on the family iPad (Home Screen app) and an Android phone | 2634eab |
 | 2026-10-14 | To-dos: repeat (every day/week/2 weeks/month/year or custom every N days/weeks/months/years; ticking adds the next, unticking removes it; calendar shows upcoming repeats), reminders (at the time, 10 min, 1 h, 1 day, 2 days, 1 week before; no time = from 9 AM), edit sheet for any to-do, and "Add a to-do" on each day in Plan and the Calendar. Migration 0006 | (this commit) |
