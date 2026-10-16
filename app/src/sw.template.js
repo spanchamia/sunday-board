@@ -67,3 +67,20 @@ self.addEventListener('notificationclick', (event) => {
     return self.clients.openWindow(url);
   })());
 });
+
+// The push service replaced this phone's address (it can do so at any time). Get the
+// new one and tell the server, proving it's us with the old address.
+self.addEventListener('pushsubscriptionchange', (event) => {
+  event.waitUntil((async () => {
+    const old = event.oldSubscription;
+    let sub = event.newSubscription;
+    if (!sub && old && old.options) sub = await self.registration.pushManager.subscribe(old.options);
+    if (!old || !sub) return;   // the app re-checks and renews when it next opens
+    const j = sub.toJSON();
+    await fetch('https://ecgskwekeitfqtjvprao.supabase.co/functions/v1/push', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'resubscribe', old: old.endpoint, endpoint: j.endpoint, keys: j.keys }),
+    });
+  })().catch(() => { /* the app's own check will fix it */ }));
+});

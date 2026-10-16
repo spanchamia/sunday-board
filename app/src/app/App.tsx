@@ -11,6 +11,8 @@ import { TodosPage } from '../features/todos/TodosPage';
 import { Icon } from '../ui/Icon';
 import { href, useRoute, type Route } from './router';
 import { useBadges, type Badges } from './useBadges';
+import { useEffect } from 'react';
+import { syncPushSoon } from '../lib/push';
 import { useFamily, type FamilyData } from './useFamily';
 import { useSession } from './useSession';
 
@@ -38,6 +40,13 @@ function SignedIn({ userId, email }: { userId: string; email: string }) {
 
 function Ready({ data, reload, route }: { data: FamilyData; reload: () => Promise<void>; route: Route }) {
   const badges = useBadges(data.family.id);
+  // Keep this device's notification address fresh (renewed quietly if the push service retired it).
+  useEffect(() => {
+    syncPushSoon();
+    const onShow = () => { if (document.visibilityState === 'visible') syncPushSoon(); };
+    document.addEventListener('visibilitychange', onShow);
+    return () => document.removeEventListener('visibilitychange', onShow);
+  }, []);
   return (
     <div className="app">
       <main className={`page${route.tab === 'calendar' ? ' wide' : ''}`}>

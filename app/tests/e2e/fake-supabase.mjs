@@ -49,6 +49,12 @@ function matches(row, params) {
 export async function installFake(page, db) {
   const writes = [];
   await page.route(/supabase\.co\/(realtime|auth)\//, (r) => r.abort());
+  await page.route(`${PROJECT}/functions/v1/**`, async (route) => {
+    const body = JSON.parse(route.request().postData() ?? '{}');
+    writes.push({ method: 'FUNCTION', table: 'push', body });
+    const res = body.action === 'public-key' ? { publicKey: 'BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SkvMeAtA3LFgDzkrxZJjSgSnfckjBJuBkr3qBUYIHBQFLXYp5Nksh8U' } : { ok: true };
+    return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(res) });
+  });
   await page.route(`${PROJECT}/rest/v1/**`, async (route) => {
     const req = route.request();
     const url = new URL(req.url());

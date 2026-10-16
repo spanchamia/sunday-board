@@ -68,7 +68,7 @@ export type Database = {
         Relationships: []
       }
       push_subscriptions: {
-        Row: { auth: string; created_at: string; endpoint: string; family_id: string; p256dh: string; summary_sent_on: string | null; summary_time: string | null; user_id: string }
+        Row: { auth: string; created_at: string; endpoint: string; family_id: string; gone_at: string | null; p256dh: string; summary_sent_on: string | null; summary_time: string | null; user_id: string }
         Insert: { auth: string; created_at?: string; endpoint: string; family_id: string; p256dh: string; summary_sent_on?: string | null; summary_time?: string | null; user_id?: string }
         Update: { auth?: string; created_at?: string; endpoint?: string; family_id?: string; p256dh?: string; summary_sent_on?: string | null; summary_time?: string | null; user_id?: string }
         Relationships: []
@@ -141,6 +141,7 @@ export type Database = {
       new_invite_code: { Args: never; Returns: string }
       remove_push_subscription: { Args: { p_endpoint: string }; Returns: undefined }
       set_push_summary: { Args: { p_endpoint: string; p_time: string | null }; Returns: undefined }
+      save_push_device: { Args: { p_auth: string; p_endpoint: string; p_p256dh: string; p_tz?: string; p_replaces?: string }; Returns: undefined }
       save_push_subscription: { Args: { p_auth: string; p_endpoint: string; p_p256dh: string; p_tz?: string }; Returns: undefined }
       search_catalog: { Args: { max_results?: number; q: string }; Returns: { aliases: string[]; category_path: string[]; id: string; name: string; restock_mode: string; search_text: string; sizes: string[]; tags: string[] }[]; SetofOptions: { from: '*'; to: 'catalog_items'; isOneToOne: false; isSetofReturn: true } }
     }

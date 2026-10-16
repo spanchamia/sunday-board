@@ -520,6 +520,33 @@ for (const scheme of ['light', 'dark']) {
   await page.close();
 }
 
+// 13. A phone whose push address the server dropped gets a fresh one when the app opens
+{
+  const { page, data, writes, errors } = await open();
+  data.push_subscriptions = [];   // the push service retired the old address and the server let it go
+  await page.addInitScript(() => {
+    Object.defineProperty(Notification, 'permission', { get: () => 'granted' });
+    const mk = (e) => ({ endpoint: e, unsubscribe: async () => { window.__unsub = (window.__unsub || 0) + 1; return true; },
+      toJSON: () => ({ endpoint: e, keys: { p256dh: 'k-' + e.slice(-3), auth: 'a' } }) });
+    let current = mk('https://push.example/old');
+    navigator.serviceWorker.getRegistration = async () => ({ pushManager: {
+      getSubscription: async () => current,
+      subscribe: async () => { current = mk('https://push.example/new'); return current; },
+    } });
+    navigator.serviceWorker.register = async () => navigator.serviceWorker.getRegistration();
+  });
+  await page.goto(`${base}/`);
+  await page.getByRole('heading', { name: 'Panchamia' }).waitFor();
+  await page.waitForFunction(() => true);
+  let saved;
+  for (let i = 0; i < 40 && !saved; i++) { await page.waitForTimeout(100); saved = writes.find((w) => w.method === 'RPC' && w.table === 'save_push_device'); }
+  check(saved?.body.p_endpoint === 'https://push.example/new' && saved?.body.p_replaces === 'https://push.example/old',
+    'renews the address quietly and tells the server which one it replaces (so the morning summary carries over)');
+  check(await page.evaluate(() => window.__unsub) === 1, 'the retired address is let go on the phone too');
+  check(errors.length === 0, `renewal: no script errors ${errors.join('; ')}`);
+  await page.close();
+}
+
 await browser.close();
 server.close();
 if (failures) { console.error(`${failures} check(s) failed`); process.exit(1); }
