@@ -146,3 +146,10 @@ test('repeating to-dos: next date and upcoming repeats', () => {
   assert.equal(reminderLabel(1440), '1 day before');
   assert.equal(reminderLabel(0), 'At the time');
 });
+
+import { explain } from '../../src/lib/supabase.ts';
+
+test('sign-in errors read plainly', () => {
+  assert.match(explain({ message: 'Signups not allowed for otp' }), /hasn’t been invited/);
+  assert.match(explain({ message: 'Token has expired or is invalid' }), /expired or is wrong/);
+});

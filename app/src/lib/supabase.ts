@@ -13,5 +13,7 @@ export function explain(error: { message?: string } | null | undefined): string 
   if (/Failed to fetch|NetworkError|network/i.test(m)) return 'No connection. Check your signal and try again.';
   if (/rate limit/i.test(m)) return 'Too many tries. Wait a minute, then try again.';
   if (/Token has expired|otp_expired|invalid.*otp/i.test(m)) return 'That code has expired or is wrong. Send a new one.';
+  // New sign-ups are switched off in Supabase: only invited people can get in.
+  if (/signups? not allowed|signup.*disabled/i.test(m)) return 'This email hasn’t been invited yet. Ask whoever runs your family’s Sunday Board to invite you.';
   return m;
 }
