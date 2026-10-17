@@ -28,6 +28,14 @@ export function WeekShopSheet({ family, suggestions, dishName, onClose, onDone }
   const low = suggestions.filter((s) => !s.dishIds.length);
   const toggle = (id: string) => setOff((o) => { const n = new Set(o); if (n.has(id)) n.delete(id); else n.add(id); return n; });
   const picked = suggestions.filter((s) => !off.has(s.itemId));
+  /** Untick a group if any of it is ticked, otherwise tick it all. */
+  const flip = (group: readonly Suggestion[]) => setOff((o) => {
+    const n = new Set(o);
+    const anyOn = group.some((s) => !o.has(s.itemId));
+    for (const s of group) { if (anyOn) n.add(s.itemId); else n.delete(s.itemId); }
+    return n;
+  });
+  const flipLabel = (group: readonly Suggestion[]) => (group.some((s) => !off.has(s.itemId)) ? 'Untick all' : 'Tick all');
   const skippedStaples = suggestions.filter((s) => off.has(s.itemId) && s.due);
 
   async function save() {
@@ -70,16 +78,21 @@ export function WeekShopSheet({ family, suggestions, dishName, onClose, onDone }
           <p className="soft">Nothing new to suggest. Plan some meals for the week, or check back when staples run low.</p>
         ) : (
           <>
-            <p className="soft small">Untick anything you already have. Unticked staples count as “Have it”, so they won’t come back for a while.</p>
+            <div className="row">
+              <p className="soft small grow" style={{ margin: 0 }}>Untick anything you already have. Unticked staples count as “Have it”, so they won’t come back for a while.</p>
+              <button type="button" className="btn" onClick={() => flip(suggestions)}>{flipLabel(suggestions)}</button>
+            </div>
             {meals.length > 0 && (
               <section className="stack" aria-label="For this week’s meals">
-                <h3 className="small soft">For this week’s meals</h3>
+                <div className="row"><h3 className="small soft grow">For this week’s meals</h3>
+                  <button type="button" className="link-btn small" aria-label={`${flipLabel(meals)}: meals`} onClick={() => flip(meals)}>{flipLabel(meals)}</button></div>
                 <div className="panel">{meals.map(row)}</div>
               </section>
             )}
             {low.length > 0 && (
               <section className="stack" aria-label="Staples running low">
-                <h3 className="small soft">Staples running low</h3>
+                <div className="row"><h3 className="small soft grow">Staples running low</h3>
+                  <button type="button" className="link-btn small" aria-label={`${flipLabel(low)}: staples`} onClick={() => flip(low)}>{flipLabel(low)}</button></div>
                 <div className="panel">{low.map(row)}</div>
               </section>
             )}

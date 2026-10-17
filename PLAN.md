@@ -363,6 +363,7 @@ _Smaller ideas and follow-ups. One line each._
 
 | Date | Change | Commit |
 |---|---|---|
+| 2026-10-17 | This week's shop review: "Untick all" / "Tick all" at the top and per section (family feedback after the first real weekend review) | (this commit) |
 | 2026-10-15 | Fix: to-do editor showed blank, untappable fields on the family iPad (Safari 16.6). Sheets now render through a portal into <body> instead of inside the list row; owner confirmed fixed. Also: friendly message when sign-ups are off | 4521066 |
 | 2026-10-15 | Cozi calendar moved over (one-time, from its .ics feed; not kept in the repo): 64 entries as family to-dos, 38 upcoming appointments (multi-day ones on their first day, "until …" in the title) and 26 repeating ones (next date from the Cozi rule; birthdays/anniversary remind 1 day before). Past entries and 10 stale/duplicate repeats left out, chosen by the owner. Cozi to-do and shopping lists have no export | — |
 | 2026-10-15 | Notifications keep working when a phone's push address changes: the server marks retired addresses (gone_at) instead of deleting them, the app checks on open and renews quietly (morning summary carries over), the service worker reports background changes (`resubscribe`). Migration 0010 (run by owner in SQL editor), Edge Function v3. Found when Google retired the Android phone's address | (this commit) |

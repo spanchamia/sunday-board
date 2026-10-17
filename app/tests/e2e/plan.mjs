@@ -258,6 +258,17 @@ for (const scheme of ['light', 'dark']) {
   check(!(await sheet.getByText('Onions').isVisible()), 'Onions (staple, not due) is not suggested');
   check(await sheet.getByRole('region', { name: 'Staples running low' }).getByText('Idli rice').isVisible(), 'Idli rice suggested as running low');
   await shot(page, 'week-shop');
+  const boxes = sheet.locator('input[type=checkbox]');
+  await sheet.getByRole('button', { name: 'Untick all', exact: true }).click();
+  check((await boxes.evaluateAll((els) => els.filter((e) => e.checked).length)) === 0, 'Untick all clears every box');
+  check(await sheet.getByRole('button', { name: 'Mark all as “Have it”' }).isVisible(), 'with nothing ticked, the button offers “Have it” for all');
+  await sheet.getByRole('button', { name: 'Tick all: staples' }).click();
+  check(await sheet.locator('label', { hasText: 'Idli rice' }).locator('input').isChecked() && !(await sheet.locator('label', { hasText: 'Lemons' }).locator('input').isChecked()),
+    'a section’s own link ticks just that section');
+  await sheet.getByRole('button', { name: 'Untick all', exact: true }).click();   // some ticked → offers Untick all
+  await sheet.getByRole('button', { name: 'Tick all', exact: true }).click();
+  check((await boxes.evaluateAll((els) => els.every((e) => e.checked))), 'Tick all ticks everything again');
+  await shot(page, 'week-shop-untick');
   await sheet.locator('label', { hasText: 'Idli rice' }).locator('input').uncheck();
   await sheet.getByRole('button', { name: 'Add 2 to the list' }).click();
   await page.getByRole('status').filter({ hasText: '1 marked “Have it”' }).waitFor();
