@@ -545,6 +545,7 @@ for (const scheme of ['light', 'dark']) {
       subscribe: async () => { current = mk('https://push.example/new'); return current; },
     } });
     navigator.serviceWorker.register = async () => navigator.serviceWorker.getRegistration();
+    Object.defineProperty(navigator.serviceWorker, 'ready', { get: () => navigator.serviceWorker.getRegistration() });
   });
   await page.goto(`${base}/`);
   await page.getByRole('heading', { name: 'Panchamia' }).waitFor();
@@ -555,6 +556,41 @@ for (const scheme of ['light', 'dark']) {
     'renews the address quietly and tells the server which one it replaces (so the morning summary carries over)');
   check(await page.evaluate(() => window.__unsub) === 1, 'the retired address is let go on the phone too');
   check(errors.length === 0, `renewal: no script errors ${errors.join('; ')}`);
+  await page.close();
+}
+
+// 13b. Android Chrome dropped the address on the phone itself: the app quietly subscribes again
+for (const off of [false, true]) {
+  const { page, writes, errors } = await open();
+  await page.addInitScript((off) => {
+    Object.defineProperty(Notification, 'permission', { get: () => 'granted' });
+    localStorage.setItem('sb-push-endpoint', 'https://push.example/dropped');
+    if (off) localStorage.setItem('sb-push-off', '1');
+    window.__persist = 0;
+    navigator.storage.persisted = async () => false;
+    navigator.storage.persist = async () => { window.__persist++; return true; };
+    let current = null;
+    const reg = { pushManager: {
+      getSubscription: async () => current,
+      subscribe: async () => { current = { endpoint: 'https://push.example/again', unsubscribe: async () => true,
+        toJSON: () => ({ endpoint: 'https://push.example/again', keys: { p256dh: 'k', auth: 'a' } }) }; return current; },
+    } };
+    navigator.serviceWorker.getRegistration = async () => reg;
+    navigator.serviceWorker.register = async () => reg;
+    Object.defineProperty(navigator.serviceWorker, 'ready', { get: () => Promise.resolve(reg) });
+  }, off);
+  await page.goto(`${base}/`);
+  await page.getByRole('heading', { name: 'Panchamia' }).waitFor();
+  let saved;
+  for (let i = 0; i < 30 && !saved; i++) { await page.waitForTimeout(100); saved = writes.find((w) => w.method === 'RPC' && w.table === 'save_push_device'); }
+  if (off) {
+    check(!saved, 'stays off on a phone where someone turned notifications off');
+  } else {
+    check(saved?.body.p_endpoint === 'https://push.example/again' && saved?.body.p_replaces === 'https://push.example/dropped',
+      'subscribes again by itself and carries over the old address’s settings');
+    check(await page.evaluate(() => window.__persist) >= 1, 'asks the browser to keep the app’s data');
+  }
+  check(errors.length === 0, `re-subscribe (${off ? 'off' : 'on'}): no script errors ${errors.join('; ')}`);
   await page.close();
 }
 

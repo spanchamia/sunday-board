@@ -35,6 +35,21 @@ async function publicKey(): Promise<string> {
   return data.publicKey as string;
 }
 
+// This device's last push address and whether someone turned notifications off here.
+// Used to renew quietly (keeping the morning summary) when the browser drops the address.
+const LAST = 'sb-push-endpoint', OFF = 'sb-push-off';
+const readKey = (k: string) => { try { return localStorage.getItem(k); } catch { return null; } };
+const writeKey = (k: string, v: string | null) => { try { if (v === null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch { /* ignore */ } };
+
+/**
+ * Ask the browser to keep this app's data. Android Chrome clears data for sites under
+ * storage pressure, which also removes the service worker; a reminder that then arrives
+ * makes Chrome drop the push address. Granted automatically once notifications are allowed.
+ */
+async function keepData(): Promise<void> {
+  try { if (navigator.storage?.persist && !(await navigator.storage.persisted())) await navigator.storage.persist(); } catch { /* ignore */ }
+}
+
 async function save(sub: PushSubscription, replaces: string | null = null): Promise<void> {
   const j = sub.toJSON();
   const saved = await supabase.rpc('save_push_device', {
@@ -43,6 +58,8 @@ async function save(sub: PushSubscription, replaces: string | null = null): Prom
     ...(replaces ? { p_replaces: replaces } : {}),
   });
   if (saved.error) throw saved.error;
+  writeKey(LAST, j.endpoint!);
+  writeKey(OFF, null);
 }
 
 /** Ask permission, subscribe this device and save it. Throws a readable message if it can't. */
@@ -54,25 +71,31 @@ export async function enablePush(): Promise<void> {
   await navigator.serviceWorker.ready;
   let sub = await reg.pushManager.getSubscription();
   if (!sub) sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: keyBytes(key) as BufferSource });
-  await save(sub);
+  await save(sub, readKey(LAST));
+  await keepData();
 }
 
 /**
  * Keep this device's notifications working. Push services (Google, Apple) sometimes
- * retire a phone's address; the server then marks it gone. When the app opens, check
- * the server still has a live address for this device, and if not, get a fresh one
- * (settings such as the morning summary carry over). Quiet: never asks or shows anything.
+ * retire a phone's address, and Android Chrome sometimes drops it on the phone itself.
+ * When the app opens: if notifications are allowed here and weren't turned off, make sure
+ * the phone has an address and the server has it live; if not, get a fresh one (settings
+ * such as the morning summary carry over). Quiet: never asks or shows anything.
  */
 export async function syncPush(): Promise<'ok' | 'renewed' | 'off'> {
-  if (pushSupport() !== 'ok' || Notification.permission !== 'granted') return 'off';
+  if (pushSupport() !== 'ok' || Notification.permission !== 'granted' || readKey(OFF)) return 'off';
+  await keepData();
   const sub = await currentSubscription();
-  if (!sub) return 'off';
-  const { data, error } = await supabase.from('push_subscriptions').select('gone_at').eq('endpoint', sub.endpoint).maybeSingle();
-  if (error) return 'ok';                       // can't tell (offline): try again next time
-  if (data && !data.gone_at) return 'ok';
-  const old = sub.endpoint;
-  await sub.unsubscribe().catch(() => false);
+  let old: string | null = readKey(LAST);
+  if (sub) {
+    const { data, error } = await supabase.from('push_subscriptions').select('gone_at').eq('endpoint', sub.endpoint).maybeSingle();
+    if (error) return 'ok';                       // can't tell (offline): try again next time
+    if (data && !data.gone_at) { writeKey(LAST, sub.endpoint); return 'ok'; }
+    old = sub.endpoint;
+    await sub.unsubscribe().catch(() => false);
+  }
   const reg = await registration();
+  await navigator.serviceWorker.ready;
   const fresh = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: keyBytes(await publicKey()) as BufferSource });
   await save(fresh, old);
   return 'renewed';
@@ -91,6 +114,8 @@ export async function disablePush(): Promise<void> {
   if (!sub) return;
   await supabase.rpc('remove_push_subscription', { p_endpoint: sub.endpoint });
   await sub.unsubscribe();
+  writeKey(OFF, '1');
+  writeKey(LAST, null);
 }
 
 /** This device's morning summary time ('HH:MM'), or null when it's off. */
