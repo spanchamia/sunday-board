@@ -17,3 +17,7 @@ export const saveHidePrivate = (v: boolean) => write('sb-hide-private', v ? '1' 
 export type CalendarView = 'week' | 'month';
 export const readCalendarView = (): CalendarView => (read('sb-cal-view') === 'month' ? 'month' : 'week');
 export const saveCalendarView = (v: CalendarView) => write('sb-cal-view', v === 'week' ? null : v);
+
+/** The kid whose school timetable this device showed last. */
+export const readSchoolKid = (): string | null => read('sb-school-kid');
+export const saveSchoolKid = (id: string) => write('sb-school-kid', id);

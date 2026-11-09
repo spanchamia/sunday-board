@@ -67,6 +67,188 @@ export type Database = {
         Update: { family_id?: string; item_id?: string; preferred?: boolean; store_id?: string }
         Relationships: []
       }
+      kids: {
+        Row: {
+          created_at: string
+          family_id: string
+          id: string
+          name: string
+          sort: number
+        }
+        Insert: {
+          created_at?: string
+          family_id: string
+          id?: string
+          name: string
+          sort?: number
+        }
+        Update: {
+          created_at?: string
+          family_id?: string
+          id?: string
+          name?: string
+          sort?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kids_family_id_fkey"
+            columns: ["family_id"]
+            isOneToOne: false
+            referencedRelation: "families"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      school_classes: {
+        Row: {
+          created_at: string
+          ends_at: string
+          family_id: string
+          id: string
+          room: string | null
+          starts_at: string
+          teacher: string | null
+          term_id: string
+          title: string
+          weekday: number
+        }
+        Insert: {
+          created_at?: string
+          ends_at: string
+          family_id: string
+          id?: string
+          room?: string | null
+          starts_at: string
+          teacher?: string | null
+          term_id: string
+          title: string
+          weekday: number
+        }
+        Update: {
+          created_at?: string
+          ends_at?: string
+          family_id?: string
+          id?: string
+          room?: string | null
+          starts_at?: string
+          teacher?: string | null
+          term_id?: string
+          title?: string
+          weekday?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "school_classes_family_id_fkey"
+            columns: ["family_id"]
+            isOneToOne: false
+            referencedRelation: "families"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "school_classes_term_id_family_id_fkey"
+            columns: ["term_id", "family_id"]
+            isOneToOne: false
+            referencedRelation: "school_terms"
+            referencedColumns: ["id", "family_id"]
+          },
+        ]
+      }
+      school_exceptions: {
+        Row: {
+          created_at: string
+          family_id: string
+          from_date: string
+          id: string
+          note: string | null
+          replaces_classes: boolean
+          term_id: string
+          title: string
+          to_date: string
+        }
+        Insert: {
+          created_at?: string
+          family_id: string
+          from_date: string
+          id?: string
+          note?: string | null
+          replaces_classes?: boolean
+          term_id: string
+          title: string
+          to_date: string
+        }
+        Update: {
+          created_at?: string
+          family_id?: string
+          from_date?: string
+          id?: string
+          note?: string | null
+          replaces_classes?: boolean
+          term_id?: string
+          title?: string
+          to_date?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "school_exceptions_family_id_fkey"
+            columns: ["family_id"]
+            isOneToOne: false
+            referencedRelation: "families"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "school_exceptions_term_id_family_id_fkey"
+            columns: ["term_id", "family_id"]
+            isOneToOne: false
+            referencedRelation: "school_terms"
+            referencedColumns: ["id", "family_id"]
+          },
+        ]
+      }
+      school_terms: {
+        Row: {
+          created_at: string
+          ends_on: string | null
+          family_id: string
+          id: string
+          kid_id: string
+          name: string
+          starts_on: string | null
+        }
+        Insert: {
+          created_at?: string
+          ends_on?: string | null
+          family_id: string
+          id?: string
+          kid_id: string
+          name: string
+          starts_on?: string | null
+        }
+        Update: {
+          created_at?: string
+          ends_on?: string | null
+          family_id?: string
+          id?: string
+          kid_id?: string
+          name?: string
+          starts_on?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "school_terms_family_id_fkey"
+            columns: ["family_id"]
+            isOneToOne: false
+            referencedRelation: "families"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "school_terms_kid_id_family_id_fkey"
+            columns: ["kid_id", "family_id"]
+            isOneToOne: false
+            referencedRelation: "kids"
+            referencedColumns: ["id", "family_id"]
+          },
+        ]
+      }
       push_subscriptions: {
         Row: { auth: string; created_at: string; endpoint: string; family_id: string; gone_at: string | null; p256dh: string; summary_sent_on: string | null; summary_time: string | null; user_id: string }
         Insert: { auth: string; created_at?: string; endpoint: string; family_id: string; p256dh: string; summary_sent_on?: string | null; summary_time?: string | null; user_id?: string }

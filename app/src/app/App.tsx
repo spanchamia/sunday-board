@@ -6,6 +6,7 @@ import { HomePage } from '../features/home/HomePage';
 import { PlanPage, type PlanView } from '../features/plan/PlanPage';
 import { ListPage } from '../features/list/ListPage';
 import { StartPage } from '../features/start/StartPage';
+import { SchoolPage } from '../features/school/SchoolPage';
 import { StoresPage } from '../features/stores/StoresPage';
 import { TodosPage } from '../features/todos/TodosPage';
 import { Icon } from '../ui/Icon';
@@ -49,7 +50,7 @@ function Ready({ data, reload, route }: { data: FamilyData; reload: () => Promis
   }, []);
   return (
     <div className="app">
-      <main className={`page${route.tab === 'calendar' ? ' wide' : ''}`}>
+      <main className={`page${route.tab === 'calendar' || route.tab === 'school' ? ' wide' : ''}`}>
         {route.tab === 'start' && <StartPage data={data} badges={badges} />}
         {route.tab === 'home' && <HomePage data={data} reload={reload} categoryId={route.id} />}
         {route.tab === 'list' && <ListPage family={data} reloadFamily={reload} />}
@@ -58,6 +59,7 @@ function Ready({ data, reload, route }: { data: FamilyData; reload: () => Promis
         {route.tab === 'todos' && <TodosPage family={data} />}
         {route.tab === 'stores' && <StoresPage data={data} reload={reload} />}
         {route.tab === 'family' && <FamilyPage data={data} />}
+        {route.tab === 'school' && <SchoolPage family={data} kidId={route.id} sub={route.sub ?? null} />}
       </main>
       <TabBar current={route.tab} badges={badges} />
     </div>
@@ -73,7 +75,7 @@ function TabBar({ current, badges }: { current: Route['tab']; badges: Badges | n
     { tab: 'family', label: 'Family', icon: 'family' },
   ];
   // My Home and Stores are reached from the launcher, so they light up Home.
-  const lit = current === 'home' || current === 'stores' ? 'start' : current === 'calendar' ? 'meals' : current;
+  const lit = current === 'home' || current === 'stores' || current === 'school' ? 'start' : current === 'calendar' ? 'meals' : current;
   return (
     <nav className="tabbar" aria-label="Main">
       {tabs.map((t) => (

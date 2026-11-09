@@ -594,6 +594,88 @@ for (const off of [false, true]) {
   await page.close();
 }
 
+// 14. School timetables: add a kid, fill Monday, copy it, an exception, a new semester
+{
+  const { page, data, errors } = await open();
+  const wd = (new Date().getDay() + 6) % 7;            // 0 = Monday
+  const monday = day(-wd);
+  await page.goto(`${base}/#/school`);
+  await page.getByText('Add each kid here').waitFor();
+  await page.getByRole('button', { name: 'Add a kid' }).click();
+  await page.getByLabel('Name').fill('Ria');
+  await page.getByRole('button', { name: 'Add', exact: true }).click();
+  await page.getByRole('button', { name: 'Set up Ria’s timetable' }).click();
+  await page.getByRole('button', { name: 'Start', exact: true }).click();
+  await page.waitForFunction(() => location.hash.endsWith('/edit'));
+  check(data.kids.length === 1 && data.school_terms.length === 1, 'adds the kid and starts a semester');
+  check(/^(Fall|Spring|Summer) \d{4}$/.test(data.school_terms[0].name), `suggests a semester name (${data.school_terms[0].name})`);
+
+  await page.getByRole('button', { name: /^Monday, / }).click();
+  await page.getByRole('button', { name: 'Add a class' }).click();
+  await page.getByLabel('Class', { exact: true }).fill('Math');
+  await page.getByLabel('Starts').fill('08:00');
+  await page.getByLabel('Ends').fill('08:50');
+  await page.getByRole('button', { name: 'Add and enter the next one' }).click();
+  await page.getByRole('status').filter({ hasText: 'Added Math' }).waitFor();
+  check(await page.getByLabel('Starts').inputValue() === '08:50' && await page.getByLabel('Ends').inputValue() === '09:40', 'the next class starts when the last one ended');
+  await page.getByLabel('Class', { exact: true }).fill('Science');
+  await page.getByLabel('Room (optional)').fill('B12');
+  await page.getByRole('button', { name: 'Add class' }).click();
+  await page.getByRole('button', { name: /Science/ }).waitFor();
+  check(data.school_classes.length === 2 && data.school_classes.every((c) => c.weekday === 1), 'two Monday classes saved');
+  check(data.school_classes[0].starts_at === '08:00:00', 'times saved as 08:00:00');
+
+  await page.getByRole('button', { name: 'Copy Monday to…' }).click();
+  await page.getByRole('button', { name: 'Copy to 4 days' }).click();
+  await page.getByRole('button', { name: 'Tuesday, 2 classes' }).waitFor();
+  check(data.school_classes.length === 10, 'copied Monday to Tuesday–Friday');
+  await shot(page, 'school-editor');
+
+  await page.getByRole('link', { name: 'Done' }).click();
+  await page.locator('.school-week').waitFor();
+  check(await page.locator('.school-week .class-title').filter({ hasText: 'Math' }).count() === 5, 'the week shows Math every weekday');
+
+  await page.getByRole('button', { name: 'Add an exception' }).first().click();
+  await page.getByLabel('What').fill('Field trip');
+  await page.getByLabel('From').fill(day(-wd + 2));
+  await page.getByLabel('To', { exact: true }).fill(day(-wd + 2));
+  await page.getByLabel('Note (optional)').fill('Pickup 3:30 at the museum');
+  await page.getByRole('button', { name: 'Add', exact: true }).click();
+  await page.locator('.school-off').filter({ hasText: 'Field trip' }).waitFor();
+  check(await page.locator('.school-week .class-title').filter({ hasText: 'Math' }).count() === 4, 'the field trip day hides its classes');
+  await shot(page, 'school-week');
+
+  await page.getByRole('button', { name: 'Next week' }).click();
+  check(await page.locator('.school-week .class-title').filter({ hasText: 'Math' }).count() === 5, 'next week is back to normal');
+  await page.getByRole('button', { name: 'Back to this week' }).click();
+
+  // Tablet: the five days side by side
+  await page.setViewportSize({ width: 1180, height: 820 });
+  const cols = await page.locator('.school-week').evaluate((el) => getComputedStyle(el).gridTemplateColumns.split(' ').length);
+  check(cols === 5, `tablet shows the week as 5 columns (${cols})`);
+  await shot(page, 'school-tablet');
+  await page.setViewportSize({ width: 390, height: 844 });
+
+  await page.goto(`${base}/#/calendar/week`);
+  await page.locator('.cal-week').waitFor();
+  check(await page.getByText('Math').count() === 0 && await page.getByText('Field trip').count() === 0, 'school is not on the family calendar');
+
+  await page.goto(`${base}/#/school`);
+  await page.getByRole('button', { name: 'More' }).click();
+  await page.getByRole('button', { name: 'New semester' }).click();
+  await page.getByLabel('Name').fill('Spring 2027');
+  await page.getByRole('button', { name: 'Erase and start fresh' }).click();
+  await page.waitForFunction(() => location.hash.endsWith('/edit'));
+  check(data.school_terms.length === 1 && data.school_terms[0].name === 'Spring 2027', 'a new semester replaces the old one');
+  await page.getByText('No classes on').waitFor();
+  check(true, 'the new semester starts with an empty table');
+
+  await page.goto(`${base}/#/start`);
+  check(await page.getByRole('link', { name: /^School/ }).count() === 1, 'School tile on the launcher');
+  check(errors.length === 0, `school: no script errors ${errors.join('; ')}`);
+  await page.close();
+}
+
 await browser.close();
 server.close();
 if (failures) { console.error(`${failures} check(s) failed`); process.exit(1); }

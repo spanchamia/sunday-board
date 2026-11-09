@@ -90,6 +90,38 @@ insert into results(check_name,value)
   select 'A2 device survives B''s removal (want 1)', count(*)::text from public.push_subscriptions where endpoint = 'https://push.example/a2';
 set local role authenticated;
 
+-- School timetables: Alice adds a kid with one class; Bob can't see or touch it; A2 (same family) can
+select set_config('request.jwt.claims','{"sub":"00000000-0000-0000-0000-0000000000a1","role":"authenticated"}',true);
+insert into public.kids (family_id, name) values (private.my_family_id(), 'Ria');
+insert into public.school_terms (family_id, kid_id, name) select private.my_family_id(), id, 'Fall 2026' from public.kids where name = 'Ria';
+insert into public.school_classes (family_id, term_id, weekday, starts_at, ends_at, title)
+  select private.my_family_id(), id, 1, '08:00', '08:50', 'Math' from public.school_terms;
+reset role;
+create temp table school_ids on commit drop as
+  select t.id tid, t.kid_id kid, t.family_id fid from public.school_terms t join public.families f on f.id = t.family_id where f.name = 'Family A';
+grant select on school_ids to authenticated;
+set local role authenticated;
+select set_config('request.jwt.claims','{"sub":"00000000-0000-0000-0000-0000000000b1","role":"authenticated"}',true);
+insert into results(check_name,value) select 'B sees A kids (want 0)', count(*)::text from public.kids;
+insert into results(check_name,value) select 'B sees A classes (want 0)', count(*)::text from public.school_classes;
+update public.school_classes set title = 'pwned';
+delete from public.school_terms;
+do $$ begin
+  begin insert into public.school_classes (family_id, term_id, weekday, starts_at, ends_at, title) select private.my_family_id(), tid, 1, '09:00', '09:50', 'Hack' from school_ids;
+    insert into results(check_name,value) values ('B adds class to A timetable', 'ALLOWED - BAD');
+  exception when others then insert into results(check_name,value) values ('B adds class to A timetable', 'blocked'); end;
+  begin insert into public.school_terms (family_id, kid_id, name) select private.my_family_id(), kid, 'Hack' from school_ids;
+    insert into results(check_name,value) values ('B starts a term for A kid', 'ALLOWED - BAD');
+  exception when others then insert into results(check_name,value) values ('B starts a term for A kid', 'blocked'); end;
+  begin insert into public.kids (family_id, name) select fid, 'Hack' from school_ids;
+    insert into results(check_name,value) values ('B adds kid into A', 'ALLOWED - BAD');
+  exception when others then insert into results(check_name,value) values ('B adds kid into A', 'blocked'); end;
+end $$;
+select set_config('request.jwt.claims','{"sub":"00000000-0000-0000-0000-0000000000a2","role":"authenticated"}',true);
+insert into results(check_name,value) select 'A2 sees Ria''s classes (want Math)', string_agg(title, ', ') from public.school_classes;
+insert into public.school_exceptions (family_id, term_id, from_date, to_date, title) select private.my_family_id(), tid, current_date, current_date, 'Field trip' from school_ids;
+insert into results(check_name,value) select 'A2 adds an exception (want 1)', count(*)::text from public.school_exceptions;
+
 select set_config('request.jwt.claims','{"sub":"00000000-0000-0000-0000-0000000000a1","role":"authenticated"}',true);
 insert into results(check_name,value) select 'owner sees tasks (want 2)', count(*)::text from public.tasks;
 

@@ -18,3 +18,9 @@ export type PlannedMeal = Tables<'planned_meals'>;
 export type Task = Tables<'tasks'>;
 export type ListEntry = Tables<'list_entries'>;
 export type ListReason = Tables<'list_entry_reasons'>;
+
+// School timetables (kept apart from the family calendar)
+export type Kid = Tables<'kids'>;
+export type SchoolTerm = Tables<'school_terms'>;
+export type SchoolClass = Tables<'school_classes'>;
+export type SchoolException = Tables<'school_exceptions'>;

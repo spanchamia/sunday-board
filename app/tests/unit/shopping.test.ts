@@ -1,3 +1,4 @@
+import { copyDay, dayPlan, isoWeekday, overlaps, schoolWeekStart, shownWeekdays, suggestTermName } from '../../src/logic/school';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { dueDate, dueStaples, everyLabel, FIRST_GUESS_DAYS, learnEvery, sinceLabel } from '../../src/logic/restock.ts';
@@ -152,4 +153,37 @@ import { explain } from '../../src/lib/supabase.ts';
 test('sign-in errors read plainly', () => {
   assert.match(explain({ message: 'Signups not allowed for otp' }), /hasn’t been invited/);
   assert.match(explain({ message: 'Token has expired or is invalid' }), /expired or is wrong/);
+});
+
+test('school: a day’s classes after term dates and exceptions', () => {
+  const c = (id: string, weekday: number, starts_at: string, title: string) => ({ id, weekday, starts_at, ends_at: '23:59:00', title, room: null, teacher: null });
+  const classes = [c('a', 3, '09:00:00', 'Science'), c('b', 3, '08:00:00', 'Math'), c('c', 4, '08:00:00', 'Art')];
+  const term = { starts_on: '2026-08-20', ends_on: '2026-12-18' };
+  const trip = { id: 'x', from_date: '2026-10-28', to_date: '2026-10-28', title: 'Field trip', note: null, replaces_classes: true };
+  const slip = { id: 'y', from_date: '2026-10-29', to_date: '2026-10-30', title: 'Permission slip', note: null, replaces_classes: false };
+  // 2026-10-28 is a Wednesday
+  assert.equal(isoWeekday('2026-10-28'), 3);
+  assert.equal(schoolWeekStart('2026-11-01'), '2026-10-26');
+  assert.deepEqual(dayPlan('2026-10-21', term, classes, []).classes.map((x) => x.title), ['Math', 'Science']);
+  const off = dayPlan('2026-10-28', term, classes, [trip, slip]);
+  assert.equal(off.off?.title, 'Field trip'); assert.equal(off.classes.length, 0);
+  const noted = dayPlan('2026-10-29', term, classes, [trip, slip]);
+  assert.deepEqual(noted.classes.map((x) => x.title), ['Art']); assert.equal(noted.notes[0]?.title, 'Permission slip');
+  const summer = dayPlan('2027-01-06', term, classes, []);
+  assert.equal(summer.inTerm, false); assert.equal(summer.classes.length, 0);
+  assert.equal(dayPlan('2026-10-21', null, classes, []).classes.length, 0);
+});
+
+test('school: copy a day, weekend columns, names, overlaps', () => {
+  const c = (id: string, weekday: number, starts_at: string, ends_at: string) => ({ id, weekday, starts_at, ends_at, title: id, room: null, teacher: null });
+  const classes = [c('m1', 1, '08:00', '08:50'), c('m2', 1, '08:40', '09:30'), c('t1', 2, '10:00', '11:00')];
+  const { remove, add } = copyDay(classes, 1, [1, 2, 3]);
+  assert.deepEqual(remove, ['t1']);
+  assert.deepEqual(add.map((x) => x.weekday), [2, 2, 3, 3]);
+  assert.deepEqual(shownWeekdays(classes), [1, 2, 3, 4, 5]);
+  assert.deepEqual(shownWeekdays([...classes, c('s', 6, '09:00', '10:00')]), [1, 2, 3, 4, 5, 6]);
+  assert.equal(suggestTermName('2026-10-28'), 'Fall 2026');
+  assert.equal(suggestTermName('2027-02-01'), 'Spring 2027');
+  assert.equal(suggestTermName('2027-06-15'), 'Summer 2027');
+  assert.deepEqual(overlaps(classes), [['m1', 'm2']]);
 });

@@ -38,6 +38,13 @@ const drawings: Record<string, string[]> = {
     'M8 31L32 11l24 20', 'M15 26v28h34V26', 'M27 54V40h10v14',
     'M41 35h6v6h-6z', 'M42 18v-7h5v11', 'M6 54h52',
   ],
+  school: [
+    'M14 30h36v24H14z', 'M8 32L32 18l24 14',              // building, roof
+    'M32 18V7h9v5h-9',                                    // flag
+    'M32 30a4 4 0 1 0 0-.01', 'M32 23.5V26h2',             // clock
+    'M28 54V42h8v12', 'M18 37h6v6h-6zM40 37h6v6h-6z',      // door, windows
+    'M6 54h52',
+  ],
   todos: [
     'M20 12V8h28v40h-6', 'M12 14h30v44H12z',
     'M17 25l2.5 2.5 4.5-5M28 25h9', 'M17 36l2.5 2.5 4.5-5M28 36h9', 'M17 47h4M28 47h9',

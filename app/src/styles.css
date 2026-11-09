@@ -399,3 +399,31 @@ details > summary { cursor: pointer; min-height: 44px; display: flex; align-item
   .cal-week .add-rows .add-row + .add-row { border-left: none; border-top: 1px solid var(--line); }
 }
 .summary-box { padding: var(--s3); border: 1px solid var(--line); border-radius: var(--r-control); background: var(--surface); }
+
+/* School timetables */
+.school-head { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s2); }
+.school-head > .grow { flex: 1 1 100%; }
+@media (min-width: 700px) { .school-head > .grow { flex: 1 1 auto; } }
+.school-head .btn { flex: none; }
+a.btn { text-decoration: none; }
+a.btn:not(.primary) { color: var(--ink); }
+.school-more { flex-wrap: wrap; gap: var(--s2); }
+.school-empty { padding: var(--s4); display: grid; gap: var(--s3); justify-items: start; }
+.school a.chip { text-decoration: none; color: inherit; }
+.school-week { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--s4); align-items: start; }
+@media (min-width: 700px) { .school-week { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); } }
+@media (min-width: 1000px) { .school-week { grid-template-columns: repeat(var(--days, 5), minmax(0, 1fr)); gap: var(--s3); } }
+.school-week .day + .day { margin-top: 0; }
+.class-row { display: flex; align-items: flex-start; gap: var(--s3); padding: var(--s2) var(--s4); min-height: 48px; }
+.class-row + .class-row, .school-note + .class-row, .school-off + .school-note { border-top: 1px solid var(--line); }
+.class-time { flex: none; width: 92px; font-size: 14px; font-weight: 700; padding-top: 2px; font-variant-numeric: tabular-nums; }
+.class-time .soft { font-weight: 400; display: block; }
+.class-title { font-weight: 700; min-width: 0; overflow-wrap: anywhere; }
+.class-title .meta { font-weight: 400; }
+@media (min-width: 1000px) { .school-week .class-row { flex-direction: column; gap: 2px; padding: var(--s2) var(--s3); } .school-week .class-time { width: auto; } .school-week .class-time .soft { display: inline; } }
+.school-off, .school-note { display: block; width: 100%; text-align: left; border: none; font: inherit; color: var(--turmeric-ink); background: var(--turmeric-soft); padding: var(--s3) var(--s4); cursor: pointer; }
+.school-note { background: none; color: var(--ink); font-size: 15px; }
+.school-note strong { color: var(--turmeric-ink); }
+.meta.warn { color: var(--chili); }
+.school-days button { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0; line-height: 1.15; padding-left: 0; padding-right: 0; }
+.day-count { display: block; font-size: 12px; font-weight: 400; color: var(--ink-soft); }

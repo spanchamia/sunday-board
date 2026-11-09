@@ -24,6 +24,10 @@ const DEFAULTS = {
   tasks: { done_at: null, visibility: 'family', due_time: null, planned_meal_id: null, prep_step_id: null, repeat_unit: null, repeat_every: null, series_id: null, remind_before: [] },
   items: { archived_at: null, restock_mode: null, restock_every_days: null, learned_every_days: null, usual_amount: null, notes: '' },
   dishes: { archived_at: null, notes: '' },
+  kids: { sort: 0 },
+  school_terms: { starts_on: null, ends_on: null },
+  school_classes: { room: null, teacher: null },
+  school_exceptions: { note: null, replaces_classes: true },
   item_events: { happened_on: new Date().toLocaleDateString('en-CA') },
 };
 

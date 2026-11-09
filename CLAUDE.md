@@ -55,7 +55,8 @@ design notes, decisions, previous iterations and open questions. Keep it current
 - Where npm is blocked (Claude's sandbox): `bash app/scripts/offline-deps.sh` builds
   `node_modules` from preinstalled tools + GitHub sources.
 - Screens: `#/start` launcher (Home tab), `#/home` My Home, `#/list`, `#/meals[/dishes]`,
-  `#/calendar[/week|/month]`, `#/todos`, `#/stores`, `#/family`; routes in `src/app/router.ts`.
+  `#/calendar[/week|/month]`, `#/todos`, `#/stores`, `#/family`,
+  `#/school[/<kidId>[/edit]]` (kids' timetables, kept off the family calendar); routes in `src/app/router.ts`.
   An empty hash opens the device's start screen (`src/lib/device.ts`: launcher or calendar).
 - Code layout: `src/commands/` (every action, named), `src/logic/` (pure, unit-tested),
   `src/features/<module>/` (screens), `src/core/` (sign-in, family), `src/ui/`.
